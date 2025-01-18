@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // or your preferred database
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  email      String    @unique
+  password   String
+  name       String?
+  role       Role      @default(USER)
+  players    Player[]
+  history    History[]
+  rating     Float?
+  profilePic String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+
+
+model Event {
+  id        Int       @id @default(autoincrement())
+  name      String
+  location  String
+  image     String?
+  time      DateTime
+  teams     Team[]
+  history   History[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Team {
+  id        Int       @id @default(autoincrement())
+  name      String
+  eventId   Int
+  event     Event     @relation(fields: [eventId], references: [id])
+  players   Player[]
+  maxPlayers Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Player {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  teamId    Int
+  user      User      @relation(fields: [userId], references: [id])
+  team      Team      @relation(fields: [teamId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model History {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  eventId   Int
+  user      User      @relation(fields: [userId], references: [id])
+  event     Event     @relation(fields: [eventId], references: [id])
+  joinedAt  DateTime  @default(now())
+}
+
+enum Role {
+  USER
+  ADMIN
+}
