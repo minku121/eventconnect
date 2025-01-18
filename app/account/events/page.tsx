@@ -43,8 +43,8 @@ export default function EventPage() {
         <SidebarComponent />
       </div>
       
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Event Management</h1>
+    <div className="flex-1 flex-col md:flex  mx-auto p-4">
+      <h1 className="text-3xl font-bold mb-6 text-center">Event Management</h1>
       
       <div className="flex justify-center space-x-4 mb-8">
         <Button onClick={() => setActiveModal('create')} className="transition-all duration-200 ease-in-out hover:bg-primary-dark">Create Event</Button>
