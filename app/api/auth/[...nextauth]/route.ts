@@ -29,16 +29,13 @@ const authHandler = NextAuth({
       },
     }),
 
-    
     GoogleProvider({
-      clientId: "158628177136-0pqp5scpph1196spp2a3479s1bq30gp9.apps.googleusercontent.com",
-      clientSecret:"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",
+      clientId: process.env.GOOGLE_CLIENTID as string,
+      clientSecret: process.env.GOOGLE_SECRET as string,
     }),
-
-    
     GithubProvider({
-      clientId:"Ov23lixbgpWrtb7iFX7t",
-      clientSecret:"76616b5b3f72f720b74d2d03e7d713d74011bbdb",
+      clientId: process.env.GITHUB_CLIENTID as string,
+      clientSecret: process.env.GITHUB_SECRET as string,
     }),
   ],
 
