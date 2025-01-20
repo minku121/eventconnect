@@ -41,16 +41,19 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(
       direction = "middle",
       ...props
     },
-    ref,
+    ref
   ) => {
     const mouseX = useMotionValue(Infinity);
 
     const renderChildren = () => {
       return React.Children.map(children, (child) => {
-        if (React.isValidElement(child) && child.type === DockIcon) {
+        if (
+          React.isValidElement<DockIconProps>(child) &&
+          child.type === DockIcon
+        ) {
           return React.cloneElement(child, {
             ...child.props,
-            mouseX: mouseX,
+            mouseX,
             size: iconSize,
             magnification: iconMagnification,
             distance: iconDistance,
@@ -75,7 +78,7 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(
         {renderChildren()}
       </motion.div>
     );
-  },
+  }
 );
 
 Dock.displayName = "Dock";
@@ -88,7 +91,6 @@ export interface DockIconProps
   mouseX?: MotionValue<number>;
   className?: string;
   children?: React.ReactNode;
-  props?: PropsWithChildren;
 }
 
 const DockIcon = ({
@@ -112,7 +114,7 @@ const DockIcon = ({
   const sizeTransform = useTransform(
     distanceCalc,
     [-distance, 0, distance],
-    [size, magnification, size],
+    [size, magnification, size]
   );
 
   const scaleSize = useSpring(sizeTransform, {
@@ -127,7 +129,7 @@ const DockIcon = ({
       style={{ width: scaleSize, height: scaleSize, padding }}
       className={cn(
         "flex aspect-square cursor-pointer items-center justify-center rounded-full",
-        className,
+        className
       )}
       {...props}
     >
