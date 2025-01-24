@@ -1,6 +1,6 @@
 "use client";  // Ensure this is at the top to specify client-side rendering
 
-import { Grid, List, Bell, BarChart, Settings, LogOut } from "lucide-react";
+import { Grid, List, Bell, BarChart, Settings, LogOut, GroupIcon, Group, Users2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,8 @@ import { useEffect, useState } from "react";
 const navItems = [
   { icon: Grid, label: "Dashboard", path: "/account/dashboard" },
   { icon: List, label: "Events", path: "/account/events" },
-  { icon: Bell, label: "Inbox", path: "/account/inbox" },
+  { icon: Users2, label: "Teams", path: "/account/teams" },
+  { icon: Bell, label: "Notification", path: "/account/notifications" },
   { icon: BarChart, label: "Report", path: "/account/report" },
   { icon: Settings, label: "Settings", path: "/account/settings" },
 ];
@@ -55,7 +56,7 @@ export function SidebarComponent() {
                 <SidebarMenuButton asChild>
                   <Button
                     variant="ghost"
-                    className={`w-[98%] justify-start p-6 mt-2 ${
+                    className={`w-[98%] justify-start p-5 mt-2 ${
                       currentPath === item.path ? "bg-slate-300 dark:bg-gray-600 " : ""
                     }`}
                     onClick={() => {

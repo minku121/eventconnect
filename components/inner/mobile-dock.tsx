@@ -9,6 +9,7 @@ import {
   User,
   UserCheck,
   LogOutIcon,
+  InboxIcon,
 } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
@@ -27,11 +28,12 @@ export type IconProps = React.HTMLAttributes<SVGElement>;
 
 const DATA = {
   navbar: [
-    { href: "#", icon: LayoutDashboard, label: "Dashboard" },
-    { href: "#", icon: CalendarIcon, label: "Events" },
-    { href: "#", icon: UsersIcon, label: "Teams" },
-    { href: "#", icon: ChartBar, label: "Report" },
-    { href: "#", icon: Settings, label: "Setting" },
+    { href: "/account/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { href: "/account/events", icon: CalendarIcon, label: "Events" },
+    { href: "/account/teams", icon: UsersIcon, label: "Teams" },
+    { href: "/account/notifications", icon: InboxIcon, label: "Notification" },
+    { href: "/account/reports", icon: ChartBar, label: "Report" },
+    { href: "/account/settings", icon: Settings, label: "Setting" },
   ],
 };
 
