@@ -6,7 +6,7 @@ interface Event {
   id: string
   name: string
   description: string
-  coverImage: string
+  image: string
   location: string
   dateTime: string
   limitedAttendees: boolean
@@ -21,7 +21,7 @@ export default function EventCard({ event }: EventCardProps) {
   return (
     <Card>
       <CardHeader>
-        <Image src={event.coverImage || "/placeholder.svg"} alt={event.name} width={400} height={200} className="rounded-t-lg" />
+        <Image src={event.image || "/placeholder.svg"} alt={event.name} width={"400"} height={"200"} className="rounded-t-lg aspect-auto" />
         <CardTitle>{event.name}</CardTitle>
       </CardHeader>
       <CardContent>

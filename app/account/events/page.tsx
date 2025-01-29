@@ -1,72 +1,120 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import CreateEventForm from '@/components/event-tab/CreateEventForm'
-import JoinEventForm from '@/components/event-tab/JoinEventForm'
-import EventCard from '@/components/event-tab/EventCard'
-import Modal from '@/components/event-tab/Modal'
-import { SidebarComponent } from '@/components/inner/sidebar-content'
+import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import CreateEventForm from '@/components/event-tab/CreateEventForm';
+import JoinEventForm from '@/components/event-tab/JoinEventForm';
+import EventCard from '@/components/event-tab/EventCard';
+import Modal from '@/components/event-tab/Modal';
+import { SidebarComponent } from '@/components/inner/sidebar-content';
+import { useSession } from 'next-auth/react';
+import { Skeleton } from "@/components/ui/skeleton"
 
-// Mock data for events
-const mockEvents = [
-  {
-    id: '1',
-    name: 'Tech Conference 2023',
-    description: 'Annual tech conference featuring the latest in AI and ML',
-    coverImage: '/placeholder.svg?height=200&width=400',
-    location: 'San Francisco, CA',
-    dateTime: '2023-09-15T09:00',
-    isPublic: true,
-    limitedAttendees: true,
-    maxAttendees: 500
-  },
-  {
-    id: '2',
-    name: 'Community Picnic',
-    description: 'A fun day out for the whole family',
-    coverImage: '/placeholder.svg?height=200&width=400',
-    location: 'Central Park, NY',
-    dateTime: '2023-07-22T12:00',
-    isPublic: true,
-    limitedAttendees: false,
-  }
-]
+
+
 
 export default function EventPage() {
-  const [activeModal, setActiveModal] = useState<'create' | 'join' | null>(null)
 
+  const { data: session } = useSession();
+  const [activeModal, setActiveModal] = useState<'create' | 'join' | null>(null);
+  const [mockEvents, setMockEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchEvents = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/event/viewmine');
+      const data = await response.json();
+      
+      const formattedData = (data || []).map((event: any, index: any) => ({
+        ...event,
+        id: event.id || `fallback-id-${index}`,
+      }));
+      
+      setMockEvents(formattedData);
+    } catch (error) {
+      console.error('Failed to fetch events:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+   
+
+  useEffect(() => {
+    fetchEvents();
+   
+  }, []);
+
+ 
   return (
     <div className="flex h-screen">
-
-    <div className="hidden md:block md:w-1/5 lg:w-1/4 xl:w-1/5">
+      <div className="hidden md:block md:w-1/5 lg:w-1/4 xl:w-1/5">
         <SidebarComponent />
       </div>
-      
-    <div className="flex-1 flex-col md:flex  mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6 text-center">Event Management</h1>
-      
-      <div className="flex justify-center space-x-4 mb-8">
-        <Button onClick={() => setActiveModal('create')} className="transition-all duration-200 ease-in-out hover:bg-primary-dark">Create Event</Button>
-        <Button onClick={() => setActiveModal('join')} className="transition-all duration-200 ease-in-out hover:bg-primary-dark">Join Event</Button>
-        <Button className="transition-all duration-200 ease-in-out hover:bg-primary-dark">See All Events</Button>
-      </div>
 
-      <Modal isOpen={activeModal === 'create'} onClose={() => setActiveModal(null)}>
-        <CreateEventForm onClose={() => setActiveModal(null)} />
-      </Modal>
+      <div className="flex-1 flex-col md:flex mx-auto p-4">
+        <h1 className="text-3xl font-bold mb-6 text-center">Event Management</h1>
 
-      <Modal isOpen={activeModal === 'join'} onClose={() => setActiveModal(null)}>
-        <JoinEventForm onClose={() => setActiveModal(null)} />
-      </Modal>
+        {/* Buttons */}
+        <div className="flex justify-center space-x-4 mb-8">
+          <Button
+            onClick={() => setActiveModal('create')}
+            className="transition-all duration-200 ease-in-out hover:bg-primary-dark"
+          >
+            Create Event
+          </Button>
+          <Button
+            onClick={() => setActiveModal('join')}
+            className="transition-all duration-200 ease-in-out hover:bg-primary-dark"
+          >
+            Join Event
+          </Button>
+          <Button 
+            onClick={fetchEvents}
+            className="transition-all duration-200 ease-in-out hover:bg-primary-dark"
+          >
+            Refresh Events
+          </Button>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mockEvents.map(event => (
-          <EventCard key={event.id} event={event} />
-        ))}
+        {/* Modals */}
+        <Modal isOpen={activeModal === 'create'} onClose={() => setActiveModal(null)}>
+          <CreateEventForm onClose={() => {
+            setActiveModal(null);
+            fetchEvents();
+             // Refresh events after creating
+          }} />
+        </Modal>
+        <Modal isOpen={activeModal === 'join'} onClose={() => setActiveModal(null)}>
+          <JoinEventForm onClose={() => {
+            setActiveModal(null);
+            fetchEvents();
+          // Refresh events after joining
+          }} />
+        </Modal>
+
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((_, index) => (
+              <div key={index} className="flex flex-col space-y-3">
+                <Skeleton className="h-[125px] w-full rounded-xl" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.isArray(mockEvents) &&
+              mockEvents.map((event: any) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+          </div>
+        )}
       </div>
     </div>
-    </div>
-  )
+  );
 }
-

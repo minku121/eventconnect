@@ -1,71 +1,126 @@
+datasource db {
+  provider = "postgresql" // or "mysql", "sqlite", "sqlserver", "mongodb", etc.
+  url      = env("DATABASE_URL") // Use an environment variable for the connection URL
+}
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider = "postgresql" // or your preferred database
-  url      = env("DATABASE_URL")
-}
-
 model User {
-  id         Int       @id @default(autoincrement())
-  email      String    @unique
-  password   String
-  name       String?
-  role       Role      @default(USER)
-  players    Player[]
-  history    History[]
-  rating     Float?
-  profilePic String?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id            Int            @id @default(autoincrement())
+  email         String         @unique
+  password      String
+  name          String?
+  role          Role           @default(USER)
+  notifications Notification[]
+  activities    Activity[]
+  rating        Float?
+  profilePic    String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  tournaments   Tournament[]   // Renamed for clarity
+  events        Event[]        // Renamed for clarity
 }
-
-
 
 model Event {
-  id        Int       @id @default(autoincrement())
-  name      String
-  location  String
-  image     String?
-  time      DateTime
-  teams     Team[]
-  history   History[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id           Int        @id @default(autoincrement())
+  name         String
+  description  String     @default("")
+  location     String
+  image        String?    @default("https://i.sstatic.net/y9DpT.jpg")
+  time         DateTime
+  analytics    EventAnalytics?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  ispublic     Boolean    @default(true)
+  islimited    Boolean    @default(false)
+  attandee     Int?
+  createdBy    User       @relation(fields: [createdById], references: [id])
+  createdById  Int
+}
+
+
+
+model Tournament {
+  id           Int             @id @default(autoincrement())
+  name         String
+  description  String          @default("")
+  startDate    DateTime
+  endDate      DateTime
+  teams        Team[]
+  createdBy    User            @relation(fields: [createdById], references: [id])
+  createdById  Int             // Foreign key to User (should not have a default value)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 }
 
 model Team {
-  id        Int       @id @default(autoincrement())
-  name      String
-  eventId   Int
-  event     Event     @relation(fields: [eventId], references: [id])
-  players   Player[]
-  maxPlayers Int
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id           Int             @id @default(autoincrement())
+  name         String
+  tournamentId Int             // Foreign key to Tournament (should not have a default value)
+  tournament   Tournament      @relation(fields: [tournamentId], references: [id])
+  maxPlayers   Int
+  analytics    TeamAnalytics?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 }
 
-model Player {
-  id        Int       @id @default(autoincrement())
-  userId    Int
-  teamId    Int
-  user      User      @relation(fields: [userId], references: [id])
-  team      Team      @relation(fields: [teamId], references: [id])
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+
+
+model Notification {
+  id           Int             @id @default(autoincrement())
+  userId       Int             // Foreign key to User
+  user         User            @relation(fields: [userId], references: [id])
+  type         NotificationType
+  message      String
+  read         Boolean         @default(false)
+  createdAt    DateTime        @default(now())
 }
 
-model History {
-  id        Int       @id @default(autoincrement())
-  userId    Int
-  eventId   Int
-  user      User      @relation(fields: [userId], references: [id])
-  event     Event     @relation(fields: [eventId], references: [id])
-  joinedAt  DateTime  @default(now())
+model Activity {
+  id           Int             @id @default(autoincrement())
+  userId       Int             // Foreign key to User
+  user         User            @relation(fields: [userId], references: [id])
+  description  String
+  type         ActivityType
+  createdAt    DateTime        @default(now())
+}
+
+model EventAnalytics {
+  id           Int             @id @default(autoincrement())
+  eventId      Int             @unique
+  event        Event           @relation(fields: [eventId], references: [id])
+  totalJoined  Int             @default(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+model TeamAnalytics {
+  id           Int             @id @default(autoincrement())
+  teamId       Int             @unique
+  team         Team            @relation(fields: [teamId], references: [id])
+  totalPlayers Int             @default(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 }
 
 enum Role {
   USER
   ADMIN
+}
+
+enum NotificationType {
+  EVENT_JOINED
+  TEAM_JOINED
+  NEW_MESSAGE
+  OTHER
+}
+
+enum ActivityType {
+  EVENT_CREATION
+  TOURNAMENT_CREATION
+  TEAM_CREATION
+  EVENT_JOINED
+  TEAM_JOINED
+  OTHER
 }

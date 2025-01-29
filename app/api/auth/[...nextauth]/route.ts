@@ -1,10 +1,38 @@
-import NextAuth from "next-auth";
+import NextAuth, { type DefaultSession, type DefaultUser } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GithubProvider from "next-auth/providers/github";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
+
+// Extend the default Session and User types to include the `id` property as a number
+declare module "next-auth" {
+  interface Session extends DefaultSession {
+    user: {
+      id: number; // `id` is now a number
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    } & DefaultSession["user"];
+  }
+
+  interface User extends DefaultUser {
+    id: number; // `id` is now a number
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: number; // `id` is now a number
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  }
+}
 
 const authHandler = NextAuth({
   providers: [
@@ -23,9 +51,9 @@ const authHandler = NextAuth({
         });
 
         if (user && user.password === credentials.password) {
-          return { id: user.id.toString(), name: user.name };
+          return { id: user.id, name: user.name, email: user.email }; // `id` is a number
         }
-        return null; 
+        return null;
       },
     }),
 
@@ -34,7 +62,7 @@ const authHandler = NextAuth({
       clientSecret: process.env.GOOGLE_SECRET as string,
       authorization: {
         params: {
-          redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/google`, // Ensure this matches the Google Console configuration
+          redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/google`,
         },
       },
     }),
@@ -43,7 +71,7 @@ const authHandler = NextAuth({
       clientSecret: process.env.GITHUB_SECRET as string,
       authorization: {
         params: {
-          redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/github`, // Ensure this matches GitHub's OAuth app settings
+          redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/github`,
         },
       },
     }),
@@ -52,7 +80,6 @@ const authHandler = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
 
   callbacks: {
-    
     async signIn({ user, account, profile }) {
       // For OAuth Providers
       if (account && (account.provider === "google" || account.provider === "github")) {
@@ -70,7 +97,7 @@ const authHandler = NextAuth({
             data: {
               name: profile.name || "Unknown User",
               email,
-              password: "minku_123",
+              password: "minku_123", // Hardcoded password for OAuth users
             },
           });
         }
@@ -78,35 +105,36 @@ const authHandler = NextAuth({
       return true; // Allow login
     },
 
-    async session({ session, token }) {
-      // Add custom user information to the session
-      if (token) {
-        //@ts-ignore
-        session.user = { id: token.id as string, name: token.name as string, email: token.email as string, image: token.image as string };
-      }
-      return session;
-    },
-
     async jwt({ token, user }) {
-      // Attach user ID to the token
+      // Attach user information to the token
       if (user) {
-        token.id = user.id;
+        token.id = Number(user.id); // `id` is a number
+        token.name = user.name;
+        token.email = user.email;
+        token.image = user.image;
       }
       return token;
     },
 
-  
-  
+    async session({ session, token }) {
+      // Add custom user information to the session
+      if (token) {
+        session.user = {
+          id: token.id, // `id` is a number
+          name: token.name,
+          email: token.email,
+          image: token.image,
+        };
+      }
+      return session;
+    },
   },
 
-  pages:{
+  pages: {
     signIn: "/auth/signin",
     signOut: "/auth/signout",
     error: "/auth/error",
-   
-    
-  }
- 
+  },
 });
 
 export const GET = authHandler;

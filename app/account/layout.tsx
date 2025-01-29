@@ -4,6 +4,7 @@ import { getSession } from "next-auth/react";
 import React, { ReactNode, use, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { MobileDock } from "@/components/inner/mobile-dock";
+
 interface LayoutProps {
   children: ReactNode;
 }
@@ -24,14 +25,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     checkSession();
   }, []);
 
-  return <>
+  return (
+   <div>
   
     {children}
+   
     <div className="block sm:block md:hidden">
   <MobileDock />
 </div>
 
-  </>;
+  </div>)
 };
 
 export default Layout;

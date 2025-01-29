@@ -34,7 +34,7 @@ export default function Account() {
   useEffect(() => {
     const fetchEvents = async (): Promise<void> => {
       try {
-        const response = await fetch("/api/event");
+        const response = await fetch("/api/event/displayallevent");
         if (!response.ok) {
           throw new Error(`Error: ${response.status}`);
         }
