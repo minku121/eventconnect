@@ -101,6 +101,9 @@ const authHandler = NextAuth({
             },
           });
         }
+
+        // Attach the database `id` to the user object
+        user.id = dbUser.id;
       }
       return true; // Allow login
     },
@@ -108,7 +111,7 @@ const authHandler = NextAuth({
     async jwt({ token, user }) {
       // Attach user information to the token
       if (user) {
-        token.id = Number(user.id); // `id` is a number
+        token.id = Number(user.id); // `id` is a number (database ID)
         token.name = user.name;
         token.email = user.email;
         token.image = user.image;
@@ -120,7 +123,7 @@ const authHandler = NextAuth({
       // Add custom user information to the session
       if (token) {
         session.user = {
-          id: token.id, // `id` is a number
+          id: token.id, // `id` is a number (database ID)
           name: token.name,
           email: token.email,
           image: token.image,
