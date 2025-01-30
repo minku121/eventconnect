@@ -7,6 +7,7 @@ const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   try {
+    console.log(process.env.NEXTAUTH_URL);
     
     const token = await getToken({
       req: request,
