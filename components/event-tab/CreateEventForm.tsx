@@ -9,14 +9,11 @@ import ImageUpload from "./ImageUpload";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
 
-
-
 interface CreateEventFormProps {
   onClose: () => void;
 }
 
 export default function CreateEventForm({ onClose }: CreateEventFormProps) {
-
   const { data: session } = useSession();
   const { toast } = useToast();
   const [isPublic, setIsPublic] = useState(true);
@@ -28,6 +25,7 @@ export default function CreateEventForm({ onClose }: CreateEventFormProps) {
   const [date, setDate] = useState("");
   const [attandee, setAttandee] = useState(1);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleImageUpload = (file: File) => {
     const reader = new FileReader();
@@ -39,7 +37,8 @@ export default function CreateEventForm({ onClose }: CreateEventFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(""); 
+    setError("");
+    setIsLoading(true);
   
     const eventData = {
       name,
@@ -49,7 +48,7 @@ export default function CreateEventForm({ onClose }: CreateEventFormProps) {
       image: image || "",
       ispublic: isPublic,
       islimited: limitedAttendees,
-      attandee: limitedAttendees ? attandee : null, // Fix the typo here
+      attandee: limitedAttendees ? attandee : null,
     };
     
     try {
@@ -62,26 +61,20 @@ export default function CreateEventForm({ onClose }: CreateEventFormProps) {
       });
   
       if (!response.ok) {
-        // Attempt to parse the response error, but fall back to a generic message
         const errorText = await response.text();
         const errorMessage = errorText ? JSON.parse(errorText)?.error : "Failed to create event.";
         throw new Error(errorMessage);
       }
   
-      // Parse response if it has content
       const result = response.status !== 204 ? await response.json() : null;
       console.log("Event created successfully:", result);
       toast({
         variant:"default",
         title: "Success",
         description: "Event Created Succesfully",
-      })
+      });
       
-  
-      onClose(); 
-
-    
-      
+      onClose();
     } catch (error: any) {
       console.error("Error creating event:", error);
       setError(error.message || "Failed to create event. Please try again.");
@@ -89,10 +82,11 @@ export default function CreateEventForm({ onClose }: CreateEventFormProps) {
         variant:"destructive",
         title: "Error!",
         description: "There was a problem in creating event",
-      })
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
-  
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 mb-8">
@@ -143,7 +137,9 @@ export default function CreateEventForm({ onClose }: CreateEventFormProps) {
       {error && <p className="text-red-500">{error}</p>}
 
       <div className="flex space-x-4">
-        <Button type="submit">Create Event</Button>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Creating..." : "Create Event"}
+        </Button>
       </div>
     </form>
   );

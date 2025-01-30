@@ -6,11 +6,11 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Extend the default Session and User types to include the `id` property as a number
+
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
-      id: number; // `id` is now a number
+      id: number; 
       name?: string | null;
       email?: string | null;
       image?: string | null;
@@ -97,21 +97,21 @@ const authHandler = NextAuth({
             data: {
               name: profile.name || "Unknown User",
               email,
-              password: "minku_123", // Hardcoded password for OAuth users
+              password: "minku_123", 
             },
           });
         }
 
-        // Attach the database `id` to the user object
+      
         user.id = dbUser.id;
       }
-      return true; // Allow login
+      return true; 
     },
 
     async jwt({ token, user }) {
       // Attach user information to the token
       if (user) {
-        token.id = Number(user.id); // `id` is a number (database ID)
+        token.id = Number(user.id); 
         token.name = user.name;
         token.email = user.email;
         token.image = user.image;
