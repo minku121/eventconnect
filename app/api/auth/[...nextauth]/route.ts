@@ -62,7 +62,7 @@ const authHandler = NextAuth({
       clientSecret: process.env.GOOGLE_SECRET as string,
       authorization: {
         params: {
-          redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/google`,
+          redirect_uri: `https://eventconnectweb.xyz/api/auth/callback/google`,
         },
       },
     }),
@@ -71,7 +71,7 @@ const authHandler = NextAuth({
       clientSecret: process.env.GITHUB_SECRET as string,
       authorization: {
         params: {
-          redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/github`,
+          redirect_uri: `https://eventconnectweb.xyz/api/auth/callback/github`,
         },
       },
     }),
@@ -81,12 +81,12 @@ const authHandler = NextAuth({
 
   callbacks: {
     async signIn({ user, account, profile }) {
-      // For OAuth Providers
+     
       if (account && (account.provider === "google" || account.provider === "github")) {
         const email = profile?.email;
         if (!email) return false;
 
-        // Check if user exists in the database
+     
         let dbUser = await prisma.user.findUnique({
           where: { email },
         });
