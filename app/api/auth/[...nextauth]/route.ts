@@ -6,10 +6,11 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Extend the default Session and User types to include the `id` property as a number
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
-      id: number; 
+      id: number; // `id` is now a number
       name?: string | null;
       email?: string | null;
       image?: string | null;
@@ -43,26 +44,14 @@ const authHandler = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials: any) {
-        let user = await prisma.user.findUnique({
+        const user = await prisma.user.findUnique({
           where: {
             email: credentials.email,
           },
         });
 
-        // If user not found, create a new one
-        if (!user) {
-          user = await prisma.user.create({
-            data: {
-              email: credentials.email,
-              password: credentials.password,
-              name: credentials.email.split('@')[0], // Use email prefix as default name
-            },
-          });
-        }
-
-        // If user exists and password matches, or if new user was created
         if (user && user.password === credentials.password) {
-          return { id: user.id, name: user.name, email: user.email };
+          return { id: user.id, name: user.name, email: user.email }; // `id` is a number
         }
         return null;
       },
@@ -73,18 +62,18 @@ const authHandler = NextAuth({
       clientSecret: process.env.GOOGLE_SECRET as string,
       authorization: {
         params: {
-          redirect_uri: process.env.NEXTAUTH_URL + "/api/auth/callback/google"
-        }
-      }
+          redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/google`,
+        },
+      },
     }),
     GithubProvider({
       clientId: process.env.GITHUB_CLIENTID as string,
       clientSecret: process.env.GITHUB_SECRET as string,
       authorization: {
         params: {
-          redirect_uri: process.env.NEXTAUTH_URL + "/api/auth/callback/github"
-        }
-      }
+          redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/github`,
+        },
+      },
     }),
   ],
 
@@ -108,20 +97,21 @@ const authHandler = NextAuth({
             data: {
               name: profile.name || "Unknown User",
               email,
-              password: "minku_123", 
+              password: "minku_123", // Hardcoded password for OAuth users
             },
           });
         }
 
+        // Attach the database `id` to the user object
         user.id = dbUser.id;
       }
-      return true; 
+      return true; // Allow login
     },
 
     async jwt({ token, user }) {
       // Attach user information to the token
       if (user) {
-        token.id = Number(user.id); 
+        token.id = Number(user.id); // `id` is a number (database ID)
         token.name = user.name;
         token.email = user.email;
         token.image = user.image;
@@ -140,11 +130,13 @@ const authHandler = NextAuth({
         };
       }
       return session;
-    }
+    },
   },
 
   pages: {
     signIn: "/auth/signin",
+    signOut: "/auth/signout",
+    error: "/auth/error",
   },
 });
 
