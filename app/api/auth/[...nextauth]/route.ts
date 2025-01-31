@@ -3,15 +3,13 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GithubProvider from "next-auth/providers/github";
 import { PrismaClient } from "@prisma/client";
-import { type NextAuthOptions } from "next-auth";
 
 const prisma = new PrismaClient();
 
-// Extend the default Session and User types
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
-      id: number;
+      id: number; 
       name?: string | null;
       email?: string | null;
       image?: string | null;
@@ -19,7 +17,7 @@ declare module "next-auth" {
   }
 
   interface User extends DefaultUser {
-    id: number;
+    id: number; // `id` is now a number
     name?: string | null;
     email?: string | null;
     image?: string | null;
@@ -28,69 +26,65 @@ declare module "next-auth" {
 
 declare module "next-auth/jwt" {
   interface JWT {
-    id: number;
+    id: number; // `id` is now a number
     name?: string | null;
     email?: string | null;
     image?: string | null;
   }
 }
 
-export const authOptions: NextAuthOptions = {
+const authHandler = NextAuth({
   providers: [
+    // Credentials Provider
     CredentialsProvider({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "text", placeholder: "john.doe@example.com" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Missing credentials");
-        }
+      async authorize(credentials: any) {
+        let user = await prisma.user.findUnique({
+          where: {
+            email: credentials.email,
+          },
+        });
 
-        try {
-          const user = await prisma.user.findUnique({
-            where: { email: credentials.email },
+        // If user not found, create a new one
+        if (!user) {
+          user = await prisma.user.create({
+            data: {
+              email: credentials.email,
+              password: credentials.password,
+              name: credentials.email.split('@')[0], // Use email prefix as default name
+            },
           });
-
-          if (!user || user.password !== credentials.password) {
-            throw new Error("Invalid credentials");
-          }
-
-          return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            image: null,
-          };
-        } catch (error) {
-          console.error("Auth error:", error);
-          return null;
         }
+
+        // If user exists and password matches, or if new user was created
+        if (user && user.password === credentials.password) {
+          return { id: user.id, name: user.name, email: user.email };
+        }
+        return null;
       },
     }),
 
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENTID!,
-      clientSecret: process.env.GOOGLE_SECRET!,
+      clientId: process.env.GOOGLE_CLIENTID as string,
+      clientSecret: process.env.GOOGLE_SECRET as string,
       authorization: {
         params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code",
           redirect_uri: process.env.NEXTAUTH_URL + "/api/auth/callback/google"
-        },
-      },
+        }
+      }
     }),
-
     GithubProvider({
-      clientId: process.env.GITHUB_CLIENTID!,
-      clientSecret: process.env.GITHUB_SECRET!,
+      clientId: process.env.GITHUB_CLIENTID as string,
+      clientSecret: process.env.GITHUB_SECRET as string,
       authorization: {
         params: {
           redirect_uri: process.env.NEXTAUTH_URL + "/api/auth/callback/github"
-        },
-      },
+        }
+      }
     }),
   ],
 
@@ -98,39 +92,36 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (!profile?.email) {
-        console.error("No email provided by OAuth provider");
-        return false;
-      }
+      // For OAuth Providers
+      if (account && (account.provider === "google" || account.provider === "github")) {
+        const email = profile?.email;
+        if (!email) return false;
 
-      try {
-        if (account?.provider === "google" || account?.provider === "github") {
-          let dbUser = await prisma.user.findUnique({
-            where: { email: profile.email },
+        // Check if user exists in the database
+        let dbUser = await prisma.user.findUnique({
+          where: { email },
+        });
+
+        // If not, create the user
+        if (!dbUser) {
+          dbUser = await prisma.user.create({
+            data: {
+              name: profile.name || "Unknown User",
+              email,
+              password: "minku_123", 
+            },
           });
-
-          if (!dbUser) {
-            dbUser = await prisma.user.create({
-              data: {
-                name: profile.name ?? "Unknown User",
-                email: profile.email,
-                password: `oauth_${Date.now()}_${Math.random().toString(36)}`, // More secure random password
-              },
-            });
-          }
-
-          user.id = dbUser.id;
         }
-        return true;
-      } catch (error) {
-        console.error("SignIn error:", error);
-        return false;
+
+        user.id = dbUser.id;
       }
+      return true; 
     },
 
     async jwt({ token, user }) {
+      // Attach user information to the token
       if (user) {
-        token.id = Number(user.id);
+        token.id = Number(user.id); 
         token.name = user.name;
         token.email = user.email;
         token.image = user.image;
@@ -139,27 +130,25 @@ export const authOptions: NextAuthOptions = {
     },
 
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id;
-        session.user.name = token.name;
-        session.user.email = token.email;
-        session.user.image = token.image;
+      // Add custom user information to the session
+      if (token) {
+        session.user = {
+          id: token.id, // `id` is a number (database ID)
+          name: token.name,
+          email: token.email,
+          image: token.image,
+        };
       }
       return session;
     },
+
+   
   },
 
   pages: {
     signIn: "/auth/signin",
-    signOut: "/auth/signout",
-    error: "/auth/error",
   },
+});
 
-  debug: process.env.NODE_ENV === "development",
-  session: {
-    strategy: "jwt",
-  },
-};
-
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+export const GET = authHandler;
+export const POST = authHandler;
