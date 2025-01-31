@@ -82,7 +82,7 @@ const authHandler = NextAuth({
       clientSecret: process.env.GITHUB_SECRET as string,
       authorization: {
         params: {
-          redirect_uri: process.env.NEXTAUTH_URL + "/api/auth/callback/google"
+          redirect_uri: process.env.NEXTAUTH_URL + "/api/auth/callback/github"
         }
       }
     }),
@@ -143,7 +143,16 @@ const authHandler = NextAuth({
     },
 
     async redirect({ url, baseUrl }) {
-      return url.startsWith(baseUrl) ? url : baseUrl;
+      // If the URL is a relative path (starts with /), redirect to it
+      if (url.startsWith('/')) {
+        return url;
+      }
+      // If the URL is within our base URL, redirect to it
+      if (url.startsWith(baseUrl)) {
+        return url;
+      }
+      // Default to /account if no specific redirect is requested
+      return `${baseUrl}/account`;
     }
   },
 
