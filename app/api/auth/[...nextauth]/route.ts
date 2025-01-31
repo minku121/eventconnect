@@ -71,20 +71,10 @@ const authHandler = NextAuth({
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENTID as string,
       clientSecret: process.env.GOOGLE_SECRET as string,
-      authorization: {
-        params: {
-          redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/google`,
-        },
-      },
     }),
     GithubProvider({
       clientId: process.env.GITHUB_CLIENTID as string,
       clientSecret: process.env.GITHUB_SECRET as string,
-      authorization: {
-        params: {
-          redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/github`,
-        },
-      },
     }),
   ],
 
@@ -141,12 +131,14 @@ const authHandler = NextAuth({
       }
       return session;
     },
+
+    async redirect({ url, baseUrl }) {
+      return url.startsWith(baseUrl) ? url : baseUrl;
+    }
   },
 
   pages: {
     signIn: "/auth/signin",
-    signOut: "/auth/signout",
-    error: "/auth/error",
   },
 });
 
