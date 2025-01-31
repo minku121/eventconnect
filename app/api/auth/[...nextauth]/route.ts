@@ -6,7 +6,6 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
@@ -44,14 +43,26 @@ const authHandler = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials: any) {
-        const user = await prisma.user.findUnique({
+        let user = await prisma.user.findUnique({
           where: {
             email: credentials.email,
           },
         });
 
+        // If user not found, create a new one
+        if (!user) {
+          user = await prisma.user.create({
+            data: {
+              email: credentials.email,
+              password: credentials.password,
+              name: credentials.email.split('@')[0], // Use email prefix as default name
+            },
+          });
+        }
+
+        // If user exists and password matches, or if new user was created
         if (user && user.password === credentials.password) {
-          return { id: user.id, name: user.name, email: user.email }; // `id` is a number
+          return { id: user.id, name: user.name, email: user.email };
         }
         return null;
       },
@@ -102,7 +113,6 @@ const authHandler = NextAuth({
           });
         }
 
-      
         user.id = dbUser.id;
       }
       return true; 
