@@ -140,19 +140,6 @@ const authHandler = NextAuth({
         };
       }
       return session;
-    },
-
-    async redirect({ url, baseUrl }) {
-      // If the URL is a relative path (starts with /), redirect to it
-      if (url.startsWith('/')) {
-        return url;
-      }
-      // If the URL is within our base URL, redirect to it
-      if (url.startsWith(baseUrl)) {
-        return url;
-      }
-      // Default to /account if no specific redirect is requested
-      return `${baseUrl}/account`;
     }
   },
 
