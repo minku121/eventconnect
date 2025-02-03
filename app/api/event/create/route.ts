@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       createdById: userId
     };
     const event = await prisma.event.create({
-      //@ts-ignore
+     
       data: {
         ...prismaData,
       

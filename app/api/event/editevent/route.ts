@@ -60,9 +60,9 @@ export async function PUT(request: NextRequest) {
         description: body.description,
         image: body.image,
         location: body.location,
-        time: eventDateTime,
-        islimited:body.limitedAttendees,
-        attandee: body.limitedAttendees ? body.maxAttendees : null,
+        dateTime: eventDateTime,
+        islimited: body.limitedAttendees,
+        attendee: body.limitedAttendees ? body.maxAttendees : null,
         ispublic: body.ispublic,
       },
     });
