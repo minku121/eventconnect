@@ -28,18 +28,16 @@ model Event {
   description  String     @default("")
   location     String
   image        String?    @default("https://i.sstatic.net/y9DpT.jpg")
-  time         DateTime
+  dateTime     DateTime
   analytics    EventAnalytics?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   ispublic     Boolean    @default(true)
   islimited    Boolean    @default(false)
-  attandee     Int?
+  attendee     Int?
   createdBy    User       @relation(fields: [createdById], references: [id])
   createdById  Int
 }
-
-
 
 model Tournament {
   id           Int             @id @default(autoincrement())
@@ -64,8 +62,6 @@ model Team {
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
 }
-
-
 
 model Notification {
   id           Int             @id @default(autoincrement())

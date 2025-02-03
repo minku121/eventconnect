@@ -38,8 +38,9 @@ export default function LoginPage() {
         variant: "destructive",
       })
     } else if (result?.url) {
-
-      router.push('/account')
+      const urlParams = new URLSearchParams(window.location.search)
+      const callbackUrl = urlParams.get('callbackUrl')
+      router.push(callbackUrl || '/account')
     }
 
     setLoading(false)  // Stop loading

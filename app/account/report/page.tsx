@@ -11,9 +11,7 @@ export default function page() {
   return (
     <div className="flex h-screen">
 
-          <div className="hidden md:block md:w-1/5 lg:w-1/4 xl:w-1/5">
-              <SidebarComponent />
-          </div>
+          
 
          <div className="flex-1 flex flex-col gap-10 mt-2 mx-auto p-4">
 

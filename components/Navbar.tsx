@@ -100,7 +100,7 @@ export function Navbar() {
             </Link>
             {session ? (
               <Link
-                href="/dashboard"
+                href="/account/dashboard"
                 className="block px-2 py-1 text-lg"
                 onClick={closeMenu}
               >

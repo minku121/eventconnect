@@ -28,9 +28,24 @@ export async function GET(request: NextRequest) {
       where: {
         createdById: userId,
       },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        image: true,
+        location: true,
+        time: true,
+        attandee:true,
+        ispublic: true,
+      }
     });
 
-    return NextResponse.json(events);
+    const eventsWithISOString = events.map(event => ({
+      ...event,
+      dateTime: event.time.toISOString()
+    }));
+
+    return NextResponse.json(eventsWithISOString);
   } catch (error) {
     console.error("Error fetching events:", error);
     return NextResponse.json(

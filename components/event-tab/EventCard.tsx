@@ -1,6 +1,8 @@
 import Image from 'next/image'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { EditEventPopover } from './edit_event_popover'
+import DeleteEventForm from './delete_event_form'
 
 interface Event {
   id: string
@@ -11,13 +13,21 @@ interface Event {
   dateTime: string
   limitedAttendees: boolean
   maxAttendees?: number
+  ispublic: boolean
 }
 
 interface EventCardProps {
   event: Event
+  onEventUpdate?: (updatedEvent: Event) => void
+  onEventDelete?: (deletedEventId: string) => void
 }
 
-export default function EventCard({ event }: EventCardProps) {
+export default function EventCard({ event, onEventUpdate, onEventDelete }: EventCardProps) {
+  const handleViewEvent = () => {
+    // TODO: Implement view event logic
+    console.log('Viewing event:', event.id)
+  }
+
   return (
     <Card className="flex flex-col h-full">
       <CardHeader className="p-0">
@@ -48,9 +58,32 @@ export default function EventCard({ event }: EventCardProps) {
         </div>
       </CardContent>
       <CardFooter className="mt-auto py-4 px-4">
-        <div className="flex justify-around w-full">
-          <Button>View Details</Button>
-          <Button variant="outline">Edit Event</Button>
+        <div className="grid grid-cols-3 gap-2 w-full">
+          <Button 
+            className="w-full"
+            variant="outline"
+            onClick={handleViewEvent}>
+            View
+          </Button>
+          <EditEventPopover 
+            event={event}
+            onSave={(updatedEvent) => {
+              if (onEventUpdate) {
+                onEventUpdate(updatedEvent)
+              }
+              
+            }}
+          />
+          <DeleteEventForm 
+          
+            event={event} 
+            onDelete={(deletedEventId) => {
+              if (onEventDelete) {
+                onEventDelete(deletedEventId)
+              }
+             
+            }}
+          />
         </div>
       </CardFooter>
     </Card>
