@@ -86,14 +86,13 @@ export async function POST(request: NextRequest) {
       image: body.image || "https://i.sstatic.net/y9DpT.jpg",
       ispublic: Boolean(body.ispublic),
       islimited: Boolean(body.islimited),
-      attandee: attandeeValue,
+      attendee: attandeeValue,
       createdById: userId
     };
-
     const event = await prisma.event.create({
       data: {
         ...prismaData,
-        time: prismaData.dateTime 
+        time: timeDate // Add the missing 'time' field required by Prisma schema
       },
     });
 

@@ -28,7 +28,7 @@ model Event {
   description  String     @default("")
   location     String
   image        String?    @default("https://i.sstatic.net/y9DpT.jpg")
-  dateTime     DateTime
+  dateTime     DateTime   @default(now())
   analytics    EventAnalytics?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
