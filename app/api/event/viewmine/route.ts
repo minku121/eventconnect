@@ -34,15 +34,15 @@ export async function GET(request: NextRequest) {
         description: true,
         image: true,
         location: true,
-        time: true,
-        attandee:true,
+        dateTime: true,
+        attendee: true,
         ispublic: true,
       }
     });
 
     const eventsWithISOString = events.map(event => ({
       ...event,
-      dateTime: event.time.toISOString()
+      dateTime: event.dateTime.toISOString()
     }));
 
     return NextResponse.json(eventsWithISOString);
