@@ -82,20 +82,21 @@ export async function POST(request: NextRequest) {
       name: body.name,
       description: body.description,
       location: body.location,
-      time: timeDate,
+      dateTime: timeDate,
       image: body.image || "https://i.sstatic.net/y9DpT.jpg",
       ispublic: Boolean(body.ispublic),
       islimited: Boolean(body.islimited),
       attandee: attandeeValue,
-      createdById:userId
+      createdById: userId
     };
 
- 
     const event = await prisma.event.create({
-      data: prismaData,
+      data: {
+        ...prismaData,
+        time: prismaData.dateTime 
+      },
     });
 
-   
     return NextResponse.json({success: true, msg: "Event created successfully" }, { status: 201 });
 
   } catch (error) {
