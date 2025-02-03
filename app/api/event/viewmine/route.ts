@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
         image: true,
         location: true,
         dateTime: true,
+        islimited:true,
         attendee: true,
         ispublic: true,
       }

@@ -11,7 +11,7 @@ interface Event {
   image: string
   location: string
   dateTime: string
-  limitedAttendees: boolean
+  islimited:boolean
   maxAttendees?: number
   ispublic: boolean
 }
@@ -52,7 +52,7 @@ export default function EventCard({ event, onEventUpdate, onEventDelete }: Event
         <div className="space-y-2">
           <p className="text-sm"><strong>Location:</strong> {event.location}</p>
           <p className="text-sm"><strong>Date & Time:</strong> {new Date(event.dateTime).toLocaleString()}</p>
-          {event.limitedAttendees && (
+          {event.islimited && (
             <p className="text-sm"><strong>Max Attendees:</strong> {event.maxAttendees}</p>
           )}
         </div>

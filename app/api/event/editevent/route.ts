@@ -61,8 +61,8 @@ export async function PUT(request: NextRequest) {
         image: body.image,
         location: body.location,
         dateTime: eventDateTime,
-        islimited: body.limitedAttendees,
-        attendee: body.limitedAttendees ? body.maxAttendees : null,
+        islimited: body.islimited,
+        attendee: body.islimited ? body.attendee : null,
         ispublic: body.ispublic,
       },
     });

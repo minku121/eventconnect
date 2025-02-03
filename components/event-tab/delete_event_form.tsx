@@ -11,7 +11,7 @@ interface Event {
   image: string
   location: string
   dateTime: string
-  limitedAttendees: boolean
+  islimited: boolean
   maxAttendees?: number
   ispublic: boolean
 }

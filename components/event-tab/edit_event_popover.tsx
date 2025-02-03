@@ -15,9 +15,9 @@ interface Event {
   image: string
   location: string
   dateTime: string
-  limitedAttendees: boolean
-  maxAttendees?: number
-  ispublic:boolean
+  attendee?: number
+  ispublic: boolean
+  islimited:boolean
 }
 
 interface EditEventPopoverProps {
@@ -31,8 +31,8 @@ export function EditEventPopover({ event, onSave }: EditEventPopoverProps) {
   const [image, setImage] = useState(event.image)
   const [location, setLocation] = useState(event.location)
   const [dateTime, setDateTime] = useState(event.dateTime)
-  const [limitedAttendees, setLimitedAttendees] = useState(event.limitedAttendees)
-  const [maxAttendees, setMaxAttendees] = useState(event.maxAttendees || 0)
+  const [islimited, setIsLimited] = useState(event.islimited)
+  const [attendee, setAttendee] = useState(event.attendee || 1)
   const [ispublic, setIsPublic] = useState(event.ispublic)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
@@ -64,8 +64,8 @@ export function EditEventPopover({ event, onSave }: EditEventPopoverProps) {
           image,
           location,
           dateTime,
-          limitedAttendees,
-          maxAttendees: limitedAttendees ? maxAttendees : undefined,
+          islimited,
+          attendee: islimited ? attendee : undefined,
           ispublic
         }),
       })
@@ -78,9 +78,9 @@ export function EditEventPopover({ event, onSave }: EditEventPopoverProps) {
       const updatedEvent = await response.json()
       onSave({
         ...updatedEvent,
-        dateTime: updatedEvent.time,
-        maxAttendees: updatedEvent.attandee,
-        limitedAttendees: updatedEvent.islimited
+        dateTime: updatedEvent.dateTime,
+        maxAttendees: updatedEvent.attendee,
+        islimited: updatedEvent.islimited
       })
       
       toast({
@@ -203,21 +203,21 @@ export function EditEventPopover({ event, onSave }: EditEventPopoverProps) {
           
           <div className="flex items-center gap-2">
             <Switch
-              id="limitedAttendees"
-              checked={limitedAttendees}
-              onCheckedChange={setLimitedAttendees}
+              id="islimited"
+              checked={islimited}
+              onCheckedChange={setIsLimited}
             />
-            <Label htmlFor="limitedAttendees">Limit Attendees</Label>
+            <Label htmlFor="islimited">Limit Attendees</Label>
           </div>
           
-          {limitedAttendees && (
+          {islimited && (
             <div>
-              <Label htmlFor="maxAttendees">Max Attendees</Label>
+              <Label htmlFor="attendee">Max Attendees</Label>
               <Input
                 type="number"
-                id="maxAttendees"
-                value={maxAttendees}
-                onChange={(e) => setMaxAttendees(Number(e.target.value))}
+                id="attendee"
+                value={attendee}
+                onChange={(e) => setAttendee(Number(e.target.value))}
                 min="1"
               />
             </div>
