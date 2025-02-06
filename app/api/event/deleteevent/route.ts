@@ -50,6 +50,14 @@ export async function DELETE(request: NextRequest) {
       where: { id: existingEvent.id }
     });
 
+    await prisma.activity.create({
+      data: {
+        userId: session.user.id,
+        type: "EVENT_DELETION", 
+        description: `Deleted event: ${existingEvent.name}`
+      }
+    });
+
     return NextResponse.json(
       { success: true, message: "Event deleted successfully" }
     );

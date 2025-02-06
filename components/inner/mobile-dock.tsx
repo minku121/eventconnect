@@ -10,6 +10,9 @@ import {
   UserCheck,
   LogOutIcon,
   InboxIcon,
+  LucideSettings2,
+  TicketCheckIcon,
+  Bell,
 } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
@@ -30,9 +33,10 @@ const DATA = {
   navbar: [
     { href: "/account/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { href: "/account/events", icon: CalendarIcon, label: "Events" },
-    { href: "/account/teams", icon: UsersIcon, label: "Teams" },
-    { href: "/account/notifications", icon: InboxIcon, label: "Notification" },
-    { href: "/account/reports", icon: ChartBar, label: "Report" },
+    { href: "/account/manage-events", icon: LucideSettings2, label: "Manage Events" },
+    { href: "/account/events/joined-events", icon: TicketCheckIcon, label: "Joined Events" },
+    { href: "/account/notifications", icon: Bell, label: "Notifications" },
+    { href: "/account/report", icon: ChartBar, label: "Report" },
     { href: "/account/settings", icon: Settings, label: "Setting" },
   ],
 };
@@ -51,7 +55,7 @@ export function MobileDock() {
   return (
     <div className="fixed bottom-5 flex h-auto w-[100%] flex-col items-center justify-center overflow-y-auto overflow-x-hidden rounded-lg md:shadow-xl">
       <TooltipProvider>
-        <Dock direction="middle" iconDistance={50} iconSize={35} iconMagnification={70}>
+        <Dock direction="middle" iconDistance={45} iconSize={30} iconMagnification={65}>
           {DATA.navbar.map((item) => (
             <DockIcon key={item.label}>
               <Tooltip>

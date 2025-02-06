@@ -8,5 +8,5 @@
 -- AlterTable
 ALTER TABLE "Event" DROP COLUMN "attandee",
 DROP COLUMN "time",
-ADD COLUMN     "attendee" INTEGER,
+ADD COLUMN     "maxParticipants" INTEGER,
 ADD COLUMN     "dateTime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

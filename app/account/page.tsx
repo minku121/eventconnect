@@ -1,204 +1,167 @@
-"use client";
 
-import React, { useEffect, useState, useCallback } from "react";
-import { useSession, signIn, signOut } from "next-auth/react";
-import { SidebarComponent } from "@/components/inner/sidebar-content";
-import SparklesText from "@/components/ui/sparkles-text";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Calendar, Clock, MapPin } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import type { Metadata } from "next"
+import Link from "next/link"
+import { ArrowRight, Calendar, Flag, Users, PenToolIcon as Tool } from "lucide-react"
 
-interface Event {
-  id: number;
-  name: string;
-  location: string;
-  image: string | null;
-  time: string;
-  createdAt: string;
-  updatedAt: string;
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+
+export const metadata: Metadata = {
+  title: "Dashboard Overview",
+  description: "A personalized dashboard summarizing key information",
 }
 
-export default function Page() {
-  const { data: session, status } = useSession();
-  const [loading, setLoading] = useState<boolean>(true);
-  const [events, setEvents] = useState<Event[]>([]);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [loadedPages, setLoadedPages] = useState<Set<number>>(new Set());
-  const [retryCount, setRetryCount] = useState(0);
+// Dummy data (replace with actual data fetching in a real application)
+const userData = {
+  name: "John Doe",
+  eventsJoined: 12,
+  eventsManaged: 5,
+  recentReports: 2,
+  upcomingEvents: [
+    { id: 1, name: "Team Building Workshop", date: "2023-06-15" },
+    { id: 2, name: "Annual Conference", date: "2023-07-01" },
+    { id: 3, name: "Charity Run", date: "2023-07-10" },
+  ],
+  recentActivity: [
+    { id: 1, type: "join", event: "Tech Meetup", time: "2 hours ago" },
+    { id: 2, type: "manage", event: "Project Kickoff", time: "1 day ago" },
+    { id: 3, type: "report", event: "Bug in Event Page", time: "3 days ago" },
+  ],
+  quickTools: [
+    { id: 1, name: "Event Planner", icon: Calendar, href: "/tools/planner" },
+    { id: 2, name: "Attendee Tracker", icon: Users, href: "/tools/attendees" },
+    { id: 3, name: "Feedback Collector", icon: Flag, href: "/tools/feedback" },
+  ],
+}
 
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (status === "loading") {
-      setLoading(true);
-    } else {
-      setLoading(false);
-      if (!session) {
-        signIn(); 
-      }
-    }
-  }, [session, status]);
-
-  const fetchEvents = useCallback(async (pageNumber: number, retry = retryCount): Promise<void> => {
-    try {
-      setIsLoadingMore(true);
-      const response = await fetch(`/api/event/displayallevent?page=${pageNumber}&pageSize=6`);
-      if (!response.ok) throw new Error(`Error: ${response.status}`);
-      
-      const { data, total, totalPages } = await response.json();
-      setTotalPages(totalPages);
-      
-      if (pageNumber === 1) {
-        setEvents(data);
-        setInitialLoading(false);
-        setLoadedPages(new Set([1]));
-      } else {
-        const newEvents = data.filter((newEvent: Event) => 
-          !events.some(existingEvent => existingEvent.id === newEvent.id)
-        );
-        
-        if (newEvents.length > 0) {
-          setEvents(prev => [...prev, ...newEvents]);
-          setLoadedPages(prev => new Set([...prev, pageNumber]));
-        }
-      }
-      setRetryCount(0); // Reset retry count on success
-    } catch (error) {
-      console.error("Error fetching events:", error);
-      if (retry < 3) {
-        toast({
-          title: "Error",
-          description: `Failed to load events. Retrying... (${retry + 1}/3)`,
-          variant: "destructive",
-        });
-        setTimeout(() => fetchEvents(pageNumber, retry + 1), 2000);
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to load events after multiple attempts. Please try again later.",
-          variant: "destructive",
-        });
-      }
-    } finally {
-      setIsLoadingMore(false);
-    }
-  }, [events]);
-
-  useEffect(() => {
-    if (!loadedPages.has(page)) {
-      fetchEvents(page);
-    }
-  }, [page, fetchEvents, loadedPages]);
-
-  const handleNextPage = () => {
-    if (page < totalPages) {
-      setPage(prev => prev + 1);
-    }
-  };
-
-  const handlePreviousPage = () => {
-    if (page > 1) {
-      setPage(prev => prev - 1);
-    }
-  };
-
-  const SkeletonLoader = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-      {[...Array(6)].map((_, index) => (
-        <div key={index} className="border p-4 rounded shadow space-y-4">
-          <Skeleton className="h-6 w-3/4 bg-gray-200" />
-          <Skeleton className="h-4 w-1/2 bg-gray-200" />
-          <Skeleton className="h-4 w-1/3 bg-gray-200" />
-          <Skeleton className="h-4 w-1/3 bg-gray-200" />
-          <Skeleton className="h-3 w-2/3 bg-gray-200" />
-        </div>
-      ))}
-    </div>
-  );
-
+export default function DashboardOverview() {
   return (
-    <div className="flex h-screen">
-      <div className="flex-1 p-6 overflow-y-auto">
-        <SparklesText
-          text="Recent Events"
-          className="text-center text-4xl font-semibold text-gray-200"
-          colors={{ first: "#29cb15", second: "#fff000" }}
-          sparklesCount={7}
-        />
-        <h2 className="text-center text-blue-900 text-1xl dark:text-[#4d4d4d]">
-          (These Are Mixed Events)
-        </h2>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8">Welcome back, {userData.name}!</h1>
 
-        {isLoadingMore && <SkeletonLoader />}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Events Joined</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{userData.eventsJoined}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Events Managed</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{userData.eventsManaged}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Recent Reports/Issues</CardTitle>
+            <Flag className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{userData.recentReports}</div>
+          </CardContent>
+        </Card>
+      </div>
 
-        {initialLoading ? (
-          <SkeletonLoader />
-        ) : events.length > 0 ? (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-              {events
-                .filter(event => 
-                  Math.ceil((events.indexOf(event) + 1) / 6) === page
-                )
-                .map((event) => (
-                  <div key={event.id} className="border p-4 rounded shadow hover:shadow-lg transition-shadow">
-                    <img 
-                      src={event.image || "/default-event.jpg"} 
-                      alt={event.name}
-                      className="w-full h-48 object-cover rounded-t"
-                    />
-                    <div className="p-4">
-                      <h3 className="font-bold text-lg mb-2">{event.name}</h3>
-                      <div className="space-y-1 text-sm">
-                        <p className="flex items-center">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          {event.location}
-                        </p>
-                        <p className="flex items-center">
-                          <Calendar className="w-4 h-4 mr-2" />
-                          {new Date(event.time).toLocaleDateString()}
-                        </p>
-                        <p className="flex items-center">
-                          <Clock className="w-4 h-4 mr-2" />
-                          {new Date(event.time).toLocaleTimeString()}
-                        </p>
-                      </div>
-                      <Button className="w-full mt-4">
-                        Join Now
-                      </Button>
-                    </div>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+        <Card className="col-span-2">
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-4">
+              {userData.recentActivity.map((activity) => (
+                <li key={activity.id} className="flex items-center">
+                  <Avatar className="h-9 w-9">
+                    <AvatarFallback>{activity.type[0].toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div className="ml-4 space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {activity.type === "join" && "Joined "}
+                      {activity.type === "manage" && "Managed "}
+                      {activity.type === "report" && "Reported "}
+                      {activity.event}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{activity.time}</p>
                   </div>
-                ))}
-            </div>
-            
-            <div className="flex relative justify-center gap-4 mt-8 mb-2  bottom-4  py-4">
-              <Button 
-                onClick={handlePreviousPage} 
-                disabled={page === 1}
-                className="disabled:opacity-50"
-              >
-                Previous
-              </Button>
-              <span className="flex items-center">
-                Page {page} of {totalPages}
-              </span>
-              <Button 
-                onClick={handleNextPage} 
-                disabled={page === totalPages}
-                className="disabled:opacity-50"
-              >
-                Next
-              </Button>
-            </div>
-          </>
-        ) : (
-          <div className="text-center mt-6">No events found</div>
-        )}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Upcoming Events</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-4">
+              {userData.upcomingEvents.map((event) => (
+                <li key={event.id} className="flex items-center">
+                  <Calendar className="h-4 w-4 text-muted-foreground mr-2" />
+                  <div>
+                    <p className="text-sm font-medium leading-none">{event.name}</p>
+                    <p className="text-sm text-muted-foreground">{event.date}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      </div>
+
+      <h2 className="text-2xl font-semibold mb-4">Quick Access</h2>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        {userData.quickTools.map((tool) => (
+          <Button key={tool.id} variant="outline" asChild className="w-full">
+            <Link href={tool.href}>
+              <tool.icon className="mr-2 h-4 w-4" />
+              {tool.name}
+            </Link>
+          </Button>
+        ))}
+        <Button variant="outline" asChild className="w-full">
+          <Link href="/account/settings">
+            <Tool className="mr-2 h-4 w-4" />
+            More Tools
+          </Link>
+        </Button>
+      </div>
+
+      <h2 className="text-2xl font-semibold mb-4">Quick Actions</h2>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Button asChild className="w-full">
+          <Link href="/dashboard">
+            Go to Dashboard
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
+        </Button>
+        <Button asChild className="w-full">
+          <Link href="/account/manage-events">
+            Manage Events
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
+        </Button>
+        <Button asChild className="w-full">
+          <Link href="/account/events">
+            Join Events
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
+        </Button>
+        <Button asChild className="w-full">
+          <Link href="/account/settings">
+            Account Settings
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
+        </Button>
       </div>
     </div>
-  );
+  )
 }
+

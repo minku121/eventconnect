@@ -7,6 +7,8 @@ import { Switch } from "@/components/ui/switch"
 import { useState } from "react"
 import Image from 'next/image'
 import { useToast } from '@/hooks/use-toast'
+import ImageUpload from "./ImageUpload"
+import { Progress } from "@/components/ui/progress"
 
 interface Event {
   id: string
@@ -15,9 +17,11 @@ interface Event {
   image: string
   location: string
   dateTime: string
-  attendee?: number
+  maxParticipants?: number
   ispublic: boolean
   islimited:boolean
+  isOnline: boolean
+  eventPin:string
 }
 
 interface EditEventPopoverProps {
@@ -32,20 +36,17 @@ export function EditEventPopover({ event, onSave }: EditEventPopoverProps) {
   const [location, setLocation] = useState(event.location)
   const [dateTime, setDateTime] = useState(event.dateTime)
   const [islimited, setIsLimited] = useState(event.islimited)
-  const [attendee, setAttendee] = useState(event.attendee || 1)
+  const [maxParticipants, setmaxParticipants] = useState(event.maxParticipants || 1)
   const [ispublic, setIsPublic] = useState(event.ispublic)
+  const [isOnline, setIsOnline] = useState(event.isOnline)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [eventPin, setEventPin] = useState(event.eventPin)
   const { toast } = useToast()
+  const [isImageUploading, setIsImageUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImage(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
+  const handleImageUpload = (url: string) => {
+    setImage(url)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,11 +63,13 @@ export function EditEventPopover({ event, onSave }: EditEventPopoverProps) {
           name,
           description,
           image,
-          location,
+          location: isOnline ? 'Online' : location,
           dateTime,
           islimited,
-          attendee: islimited ? attendee : undefined,
-          ispublic
+          maxParticipants: islimited ? maxParticipants : undefined,
+          ispublic,
+          isOnline,
+          eventPin: ispublic ? undefined : eventPin
         }),
       })
 
@@ -79,7 +82,7 @@ export function EditEventPopover({ event, onSave }: EditEventPopoverProps) {
       onSave({
         ...updatedEvent,
         dateTime: updatedEvent.dateTime,
-        maxAttendees: updatedEvent.attendee,
+        maxParticipants: updatedEvent.maxParticipants,
         islimited: updatedEvent.islimited
       })
       
@@ -111,12 +114,24 @@ export function EditEventPopover({ event, onSave }: EditEventPopoverProps) {
     }
   }
 
+  const handleUpload = async (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData
+    })
+
+    return response.json()
+  }
+
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline">Edit Event</Button>
       </PopoverTrigger>
-      <PopoverContent className="w-96 p-4 mx-auto items-center justify-center scale-90">
+      <PopoverContent className="w-96 p-4 mx-auto items-center justify-center max-h-[90vh] overflow-y-auto scrollbar backdrop-blur-sm scrollbar-thumb-white/20 scrollbar-track-transparent">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="name">Event Name</Label>
@@ -151,35 +166,53 @@ export function EditEventPopover({ event, onSave }: EditEventPopoverProps) {
                   />
                 </div>
               )}
-              <div className="flex gap-2">
-                <Input
-                  id="image"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setImage('')}
-                  disabled={!image}
-                >
-                  Remove
-                </Button>
-              </div>
+              <ImageUpload 
+                onImageUpload={handleImageUpload}
+                onUploadStart={() => {
+                  setIsImageUploading(true);
+                  setUploadProgress(0);
+                }}
+                onUploadEnd={() => setIsImageUploading(false)}
+                onProgress={setUploadProgress}
+                onError={(error) => {
+                  toast({
+                    variant: "destructive",
+                    title: "Upload Error",
+                    description: error,
+                  });
+                }}
+              />
+              {isImageUploading && (
+                <div className="mt-2">
+                  <Progress value={uploadProgress} className="h-2" />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Uploading... {uploadProgress}%
+                  </p>
+                </div>
+              )}
             </div>
           </div>
-          
-          <div>
-            <Label htmlFor="location">Location</Label>
-            <Input
-              id="location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              required
+
+          <div className="flex items-center gap-2">
+            <Switch
+              id="isOnline"
+              checked={isOnline}
+              onCheckedChange={setIsOnline}
             />
+            <Label htmlFor="isOnline">Online Event</Label>
           </div>
+          
+          {!isOnline && (
+            <div>
+              <Label htmlFor="location">Location</Label>
+              <Input
+                id="location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                required
+              />
+            </div>
+          )}
           
           <div>
             <Label htmlFor="datetime">Date & Time</Label>
@@ -200,6 +233,19 @@ export function EditEventPopover({ event, onSave }: EditEventPopoverProps) {
             />
             <Label htmlFor="ispublic">Public Event</Label>
           </div>
+            
+            {!ispublic && (
+              <div>
+                <Label htmlFor="eventPin">Event PIN</Label>
+                <Input
+                  id="eventPin"
+                  value={eventPin}
+                  onChange={(e) => setEventPin(e.target.value)}
+                  required
+                  placeholder="Enter access PIN for private event"
+                />
+              </div>
+            )}
           
           <div className="flex items-center gap-2">
             <Switch
@@ -207,25 +253,33 @@ export function EditEventPopover({ event, onSave }: EditEventPopoverProps) {
               checked={islimited}
               onCheckedChange={setIsLimited}
             />
-            <Label htmlFor="islimited">Limit Attendees</Label>
+            <Label htmlFor="islimited">Limit Participants</Label>
           </div>
           
           {islimited && (
             <div>
-              <Label htmlFor="attendee">Max Attendees</Label>
+              <Label htmlFor="maxParticipants">Max Participants</Label>
               <Input
                 type="number"
-                id="attendee"
-                value={attendee}
-                onChange={(e) => setAttendee(Number(e.target.value))}
+                id="maxParticipants"
+                value={maxParticipants}
+                onChange={(e) => setmaxParticipants(Number(e.target.value))}
                 min="1"
               />
             </div>
           )}
           
           <div className="flex justify-center gap-2">
-            <Button type="submit" disabled={isSubmitting}>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting || isImageUploading}
+            >
               {isSubmitting ? 'Saving...' : 'Save Changes'}
+              {isImageUploading && (
+                <span className="ml-2 text-xs">
+                  (Uploading image...)
+                </span>
+              )}
             </Button>
           </div>
         </form>

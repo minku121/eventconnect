@@ -1,37 +1,37 @@
+"use client"
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Skeleton } from "@/components/ui/skeleton"
 
-const recentActivities = [
-  {
-    name: "Olivia Martin",
-    email: "olivia.martin@email.com",
-    activity: "Joined Tech Conference 2023",
-  },
-  {
-    name: "Jackson Lee",
-    email: "jackson.lee@email.com",
-    activity: "Created Startup Networking Event",
-  },
-  {
-    name: "Isabella Nguyen",
-    email: "isabella.nguyen@email.com",
-    activity: "Commented on AI Workshop",
-  },
-  {
-    name: "William Kim",
-    email: "william.kim@email.com",
-    activity: "RSVP'd to Blockchain Meetup",
-  },
-  {
-    name: "Sofia Davis",
-    email: "sofia.davis@email.com",
-    activity: "Shared Cybersecurity Seminar",
-  },
-]
+export function RecentActivity({ activities, loading }: { 
+  activities: Array<{
+    name: string
+    email: string
+    activity: string
+    time: string
+  }>
+  loading: boolean
+}) {
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        {[...Array(3)].map((_, index) => (
+          <div className="flex items-center" key={index}>
+            <Skeleton className="h-9 w-9 rounded-full" />
+            <div className="ml-4 space-y-1">
+              <Skeleton className="h-4 w-[100px]" />
+              <Skeleton className="h-3 w-[150px]" />
+            </div>
+            <Skeleton className="ml-auto h-4 w-[50px]" />
+          </div>
+        ))}
+      </div>
+    )
+  }
 
-export function RecentActivity() {
   return (
     <div className="space-y-8">
-      {recentActivities.map((activity, index) => (
+      {activities.map((activity, index) => (
         <div className="flex items-center" key={index}>
           <Avatar className="h-9 w-9">
             <AvatarImage src={`/avatars/${index + 1}.png`} alt="Avatar" />
@@ -44,7 +44,7 @@ export function RecentActivity() {
             </p>
           </div>
           <div className="ml-auto font-medium">
-            {new Date().toLocaleTimeString()}
+            {activity.time}
           </div>
         </div>
       ))}

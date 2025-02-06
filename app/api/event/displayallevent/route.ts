@@ -11,9 +11,30 @@ export async function GET(request: Request) {
 
     const [events, total] = await prisma.$transaction([
       prisma.event.findMany({
-        where: { ispublic: true },
         skip: (page - 1) * pageSize,
         take: pageSize,
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          image: true,
+          location: true,
+          dateTime: true,
+          maxParticipants: true,
+          participantCount:true,
+          ispublic: true,
+          islimited: true,
+          isOnline: true,
+          eventId:true,
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          }
+        },
+       
       }),
       prisma.event.count({ where: { ispublic: true } })
     ]);

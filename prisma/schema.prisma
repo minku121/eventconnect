@@ -2,6 +2,7 @@ datasource db {
   provider = "postgresql" 
   url      = env("DATABASE_URL") 
 }
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,22 +12,26 @@ model User {
   email         String         @unique
   password      String
   name          String?
-  role          Role           @default(USER)
   notifications Notification[]
   activities    Activity[]
   rating        Float?
   profilePic    String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  tournaments   Tournament[]   // Renamed for clarity
-  events        Event[]        // Renamed for clarity
+  createdEvents Event[]        @relation("EventCreator")
+  joinedEvents  Event[]        @relation("EventParticipant")
+  eventsCreated Int            @default(0) @map("events_created")
+  eventsJoined  Int            @default(0) @map("events_joined")
+
+  @@map("users")
+  Event Event[]
 }
 
 model Event {
   id           Int        @id @default(autoincrement())
   name         String
   description  String     @default("")
-  location     String
+  location     String?
   image        String?    @default("https://i.sstatic.net/y9DpT.jpg")
   dateTime     DateTime   @default(now())
   analytics    EventAnalytics?
@@ -34,33 +39,19 @@ model Event {
   updatedAt    DateTime   @updatedAt
   ispublic     Boolean    @default(true)
   islimited    Boolean    @default(false)
-  attendee     Int?
+  maxParticipants Int?
   createdBy    User       @relation(fields: [createdById], references: [id])
   createdById  Int
-}
+  isOnline     Boolean    @default(false)
+  meetingId    String?    @unique
+  eventId      String     @unique @default(uuid())
+  eventPin     String?    @default("null")
 
-model Tournament {
-  id           Int             @id @default(autoincrement())
-  name         String
-  description  String          @default("")
-  startDate    DateTime
-  endDate      DateTime
-  teams        Team[]
-  createdBy    User            @relation(fields: [createdById], references: [id])
-  createdById  Int             // Foreign key to User (should not have a default value)
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-}
+  participants User[]     @relation("EventParticipant")
+  participantCount Int     @default(0) @map("participant_count")
 
-model Team {
-  id           Int             @id @default(autoincrement())
-  name         String
-  tournamentId Int             // Foreign key to Tournament (should not have a default value)
-  tournament   Tournament      @relation(fields: [tournamentId], references: [id])
-  maxPlayers   Int
-  analytics    TeamAnalytics?
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  @@map("events")
+  User User[] @relation("EventCreator")
 }
 
 model Notification {
@@ -91,32 +82,16 @@ model EventAnalytics {
   updatedAt    DateTime        @updatedAt
 }
 
-model TeamAnalytics {
-  id           Int             @id @default(autoincrement())
-  teamId       Int             @unique
-  team         Team            @relation(fields: [teamId], references: [id])
-  totalPlayers Int             @default(0)
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-}
-
-enum Role {
-  USER
-  ADMIN
-}
-
 enum NotificationType {
   EVENT_JOINED
-  TEAM_JOINED
   NEW_MESSAGE
   OTHER
 }
 
 enum ActivityType {
   EVENT_CREATION
-  TOURNAMENT_CREATION
-  TEAM_CREATION
+  EVENT_EDIT
+  EVENT_DELETION
   EVENT_JOINED
-  TEAM_JOINED
   OTHER
 }

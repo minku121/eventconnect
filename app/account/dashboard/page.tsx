@@ -1,16 +1,37 @@
+"use client"
+
 import { Metadata } from "next"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Overview } from "@/components/dashboard/overview"
 import { RecentActivity } from "@/components/dashboard/recent-activity"
 import { RecentEvents } from "@/components/dashboard/recent-events"
+import { useEffect, useState } from 'react'
 
-
-export const metadata: Metadata = {
-  title: "Dashboard",
-  description: "User Dashboard",
-}
 
 export default function DashboardPage() {
+  const [activities, setActivities] = useState<Array<{
+    name: string
+    email: string
+    activity: string
+    time: string
+  }>>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const response = await fetch('/api/activities/recent')
+        const data = await response.json()
+        setActivities(data)
+      } catch (error) {
+        console.error('Error fetching activities:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchActivities()
+  }, [])
+
   return (
     <div className="flex h-screen">
 
@@ -138,11 +159,11 @@ export default function DashboardPage() {
               <CardHeader>
                 <CardTitle>Recent Activity</CardTitle>
                 <CardDescription>
-                  You have 3 new activities today.
+                  {loading ? 'Loading...' : `You have ${activities.length} new activities`}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <RecentActivity />
+                <RecentActivity activities={activities} loading={loading} />
               </CardContent>
             </Card>
           </div>

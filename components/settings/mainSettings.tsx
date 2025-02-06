@@ -13,17 +13,17 @@ import { useSession } from "next-auth/react";
 
 export default function SettingsPage() {
   const { data: session } = useSession();
+  const { theme, setTheme } = useTheme();
 
   // States for profile settings
   const [profilePicture, setProfilePicture] = useState<string | null>(session?.user?.image ?? null);
   const [name, setName] = useState<string>(session?.user?.name || "");
   const [bio, setBio] = useState<string>("");
-  const { theme, setTheme } = useTheme();
   const [email, setEmail] = useState<string>(session?.user?.email || "");
   const [newPassword, setNewPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [isDarkMode, setIsDarkMode] = useState(theme === "dark");
 
-  
   useEffect(() => {
     if (session?.user) {
       setName(session.user.name || "");
@@ -33,10 +33,8 @@ export default function SettingsPage() {
   }, [session]);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "light";
-    setTheme(savedTheme);
-    document.documentElement.setAttribute("data-theme", savedTheme);
-  }, [setTheme]);
+    setIsDarkMode(theme === "dark");
+  }, [theme]);
 
   const handleProfilePictureChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -66,6 +64,14 @@ export default function SettingsPage() {
   const handleEmailChange = (event: React.FormEvent) => {
     event.preventDefault();
     alert(`Email changed: ${email}`);
+  };
+
+  const handleThemeChange = (checked: boolean) => {
+    const newTheme = checked ? "dark" : "light";
+    setTheme(newTheme);
+    setIsDarkMode(checked);
+    localStorage.setItem("theme", newTheme);
+    document.documentElement.setAttribute("data-theme", newTheme);
   };
 
   return (
@@ -135,8 +141,8 @@ export default function SettingsPage() {
                 <Label htmlFor="theme-toggle">Dark Mode</Label>
                 <Switch
                   id="theme-toggle"
-                  checked={theme === "dark"}
-                  onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+                  checked={isDarkMode}
+                  onCheckedChange={handleThemeChange}
                 />
               </div>
             </CardContent>

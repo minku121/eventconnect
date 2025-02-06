@@ -12,8 +12,13 @@ interface Event {
   location: string
   dateTime: string
   islimited:boolean
-  maxAttendees?: number
+  maxParticipants?: number
   ispublic: boolean
+  isOnline:boolean
+  meetingId:string,
+  eventId:string,
+  eventPin:string,
+  participantCount:number
 }
 
 interface EventCardProps {
@@ -53,8 +58,9 @@ export default function EventCard({ event, onEventUpdate, onEventDelete }: Event
           <p className="text-sm"><strong>Location:</strong> {event.location}</p>
           <p className="text-sm"><strong>Date & Time:</strong> {new Date(event.dateTime).toLocaleString()}</p>
           {event.islimited && (
-            <p className="text-sm"><strong>Max Attendees:</strong> {event.maxAttendees}</p>
+            <p className="text-sm"><strong>Max Participants:</strong> {event.maxParticipants}</p>
           )}
+          <p className='text-sm'><strong>Participated:</strong> {event.participantCount}</p>
         </div>
       </CardContent>
       <CardFooter className="mt-auto py-4 px-4">
@@ -69,6 +75,7 @@ export default function EventCard({ event, onEventUpdate, onEventDelete }: Event
             event={event}
             onSave={(updatedEvent) => {
               if (onEventUpdate) {
+                //@ts-ignore
                 onEventUpdate(updatedEvent)
               }
               

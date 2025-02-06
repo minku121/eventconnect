@@ -12,7 +12,7 @@ interface Event {
   location: string
   dateTime: string
   islimited: boolean
-  maxAttendees?: number
+  maxmaxParticipantss?: number
   ispublic: boolean
 }
 

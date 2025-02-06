@@ -36,8 +36,13 @@ export async function GET(request: NextRequest) {
         location: true,
         dateTime: true,
         islimited:true,
-        attendee: true,
+        maxParticipants: true,
         ispublic: true,
+        isOnline:true,
+        meetingId:true,
+        eventId:true,
+        eventPin:true,
+        participantCount:true
       }
     });
 

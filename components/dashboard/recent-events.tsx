@@ -21,12 +21,12 @@ const recentJoinedEvents = [
 const recentCreatedEvents = [
   {
     name: "Startup Networking Event",
-    attendees: 50,
+    maxParticipantss: 50,
     date: "2023-10-05",
   },
   {
     name: "Cybersecurity Seminar",
-    attendees: 75,
+    maxParticipantss: 75,
     date: "2023-10-10",
   },
 ]
@@ -48,7 +48,7 @@ export function RecentEvents({ type }: { type: "joined" | "created" }) {
               {type === "joined" ? (
                 `Organized by ${(event as { name: string; organizer: string; date: string }).organizer}`
               ) : (
-                `${(event as { name: string; attendees: number; date: string }).attendees} attendees`
+                `${(event as { name: string; maxParticipantss: number; date: string }).maxParticipantss} maxParticipantss`
               )}
             </p>
           </div>

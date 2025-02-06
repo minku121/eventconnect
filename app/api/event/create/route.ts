@@ -1,120 +1,94 @@
-import { PrismaClient } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import prisma from '@/app/lib/prisma'
+import { authOptions } from '@/app/lib/auth'
 
-
-const prisma = new PrismaClient();
-
-export async function POST(request: NextRequest) {
-  
-
+export async function POST(req: Request) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return new NextResponse('Unauthorized', { status: 401 })
+    }
 
-   
-    if (request.headers.get("content-type") !== "application/json") {
+    const body = await req.json()
     
-      return NextResponse.json(
-        { error: "Invalid content type. Use application/json" },
-        { status: 400 }
-      );
+    // Validation
+    if (!body.name || !body.description || !body.dateTime) {
+      return new NextResponse('Missing required fields', { status: 400 })
     }
-
-
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-
-    if (!token) {
-     
-      return NextResponse.json(
-        { error: "Not authenticated" },
-        { status: 401 }
-      );
-    }
-
-  
     
-    const userId = token.id;
-
-  
-   
-    const body = await request.json();
-  
-    const requiredFields = ["name", "description", "location", "time"];
-    const missingFields = requiredFields.filter(field => !body[field]);
-    
-    if (missingFields.length > 0) {
-     
-      return NextResponse.json(
-        { error: `Missing required fields: ${missingFields.join(", ")}` },
-        { status: 400 }
-      );
+    const eventDate = new Date(body.dateTime)
+    if (isNaN(eventDate.getTime())) {
+      return new NextResponse('Invalid date format', { status: 400 })
     }
 
-   
-   
-    const timeDate = new Date(body.time);
-    if (isNaN(timeDate.getTime())) {
-     
-      return NextResponse.json(
-        { error: "Invalid time format. Use ISO 8601 (e.g., 2023-12-31T23:59:59Z)" },
-        { status: 400 }
-      );
+    // Handle event pin logic
+    const eventPin = body.ispublic ? null : body.eventPin
+    if (eventPin && eventPin.length < 4) {
+      return new NextResponse('Event PIN must be at least 4 characters', { status: 400 })
     }
 
-  
-    let attandeeValue = null;
-    if (body.islimited) {
-      if (typeof body.attandee !== "number" || body.attandee < 1) {
-       
-        return NextResponse.json(
-          { error: "Attendee limit must be a positive number when enabled" },
-          { status: 400 }
-        );
-      }
-      attandeeValue = body.attandee;
-    }
-
- 
-   
-    const prismaData = {
+    const eventData = {
       name: body.name,
       description: body.description,
       location: body.location,
-      dateTime: timeDate,
-      image: body.image || "https://i.sstatic.net/y9DpT.jpg",
-      ispublic: Boolean(body.ispublic),
-      islimited: Boolean(body.islimited),
-      attendee: attandeeValue,
-      createdById: userId
-    };
+      dateTime: eventDate,
+      image: body.image,
+      ispublic: body.ispublic,
+      islimited: body.islimited,
+      maxParticipants: body.islimited ? body.maxParticipants : null,
+      isOnline: body.isOnline,
+      eventPin: eventPin,
+      createdById: Number(session.user.id), // Changed from parseInt to Number
+      participantCount: 0, // Initialize with 0 participants
+      eventId: undefined // Let Prisma handle the UUID default
+    }
+
     const event = await prisma.event.create({
-     
       data: {
-        ...prismaData,
-      
+        ...eventData,
+        participants: {
+          connect: { id: session.user.id }
+        },
+        analytics: {
+          create: { totalJoined: 0 }
+        }
       },
+      include: {
+        analytics: true
+      }
+    })
+
+    // Update user's events created count
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { eventsCreated: { increment: 1 } }
+    })
+
+    // Create activity and notification
+    await prisma.activity.create({
+      data: {
+        userId: Number(session.user.id),
+        type: "EVENT_CREATION",
+        description: `Created new event: ${body.name}`
+      }
     });
 
-    return NextResponse.json({success: true, msg: "Event created successfully" }, { status: 201 });
+    await prisma.notification.create({
+      data: {
+        userId: Number(session.user.id),
+        type: "EVENT_JOINED", // Or "OTHER" if you prefer
+        message: `Successfully created event: ${body.name}`
+      }
+    });
 
-  } catch (error) {
+    return NextResponse.json(event, { status: 201 })
 
-
-    const errorDetails = error instanceof Error 
-      ? { message: error.message, stack: error.stack }
-      : { errorObject: error };
-
-    console.error("Error details:", JSON.stringify(errorDetails, null, 2));
-
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  } finally {
-   
-   
-    await prisma.$disconnect();
+  } catch (error: any) {
+    console.error('[EVENT_CREATION_ERROR]', error)
+    if (error.code === 'P2002') {
+      return new NextResponse('Event with similar details already exists', { status: 409 })
+    }
+    return new NextResponse(error.message || 'Internal Server Error', { status: 500 })
   }
 }

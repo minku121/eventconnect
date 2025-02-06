@@ -13,8 +13,13 @@ export async function middleware(request: NextRequest) {
   const publicPaths = [
     '/',
     '/auth/signin',
+    '/api/auth/signup',
+    '/api/auth/signin',
     '/auth/signup',
-    '/api/auth/.*' // Allow NextAuth API routes
+    '/api/auth/.*', // Allow NextAuth API routes,
+    '/api/register',
+    
+
   ]
 
   // Check if the path is public

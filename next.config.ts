@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
-    domains: ['blogger.googleusercontent.com','i.sstatic.net',],
+    domains: ['blogger.googleusercontent.com','i.sstatic.net','res.cloudinary.com'],
   },
 };
 

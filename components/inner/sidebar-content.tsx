@@ -1,6 +1,6 @@
 "use client";  // Ensure this is at the top to specify client-side rendering
 
-import { Grid, List, Bell, BarChart, Settings, LogOut, GroupIcon, Group, Users2 } from "lucide-react";
+import { Grid, List, Bell, BarChart, Settings, LogOut, GroupIcon, Group, Users2, FileX, TicketCheckIcon, File, LucideSettings2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,8 @@ import { useEffect, useState } from "react";
 const navItems = [
   { icon: Grid, label: "Dashboard", path: "/account/dashboard" },
   { icon: List, label: "Events", path: "/account/events" },
-  { icon: Users2, label: "Teams", path: "/account/teams" },
+  { icon: LucideSettings2, label: "Manage Events", path: "/account/manage-events" },
+  { icon: TicketCheckIcon, label: "Joined Events", path: "/account/events/joined-events" },
   { icon: Bell, label: "Notification", path: "/account/notifications" },
   { icon: BarChart, label: "Report", path: "/account/report" },
   { icon: Settings, label: "Settings", path: "/account/settings" },
@@ -44,12 +45,12 @@ export function SidebarComponent() {
 
   return (
     <SidebarProvider>
-      <Sidebar className="fixed top-0 left-0 h-full w-[20%] shadow-xl">
-        <SidebarHeader className="border-b px-4 py-6">
+      <Sidebar className="fixed top-0 left-0 h-full w-[20%] shadow-xl ">
+        <SidebarHeader className="border-b px-7 py-3">
           <h2 className="text-lg font-semibold">TeamConnect</h2>
         </SidebarHeader>
 
-        <SidebarContent>
+        <SidebarContent className="">
           <SidebarMenu>
             {navItems.map((item) => (
               <SidebarMenuItem key={item.label}>

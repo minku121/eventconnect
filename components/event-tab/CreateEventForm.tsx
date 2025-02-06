@@ -8,6 +8,8 @@ import { Switch } from "@/components/ui/switch";
 import ImageUpload from "./ImageUpload";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
+import { Progress } from "@/components/ui/progress";
+import Image from "next/image";
 
 interface CreateEventFormProps {
   onClose: () => void;
@@ -17,24 +19,25 @@ export default function CreateEventForm({ onClose }: CreateEventFormProps) {
   const { data: session } = useSession();
   const { toast } = useToast();
   const [isPublic, setIsPublic] = useState(true);
-  const [limitedAttendees, setLimitedAttendees] = useState(false);
+  const [limitedParticipants, setLimitedParticipants] = useState(false);
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [image, setImage] = useState("");
   const [location, setLocation] = useState("");
   const [date, setDate] = useState("");
-  const [attandee, setAttandee] = useState(1);
+  const [maxParticipants, setMaxParticipants] = useState(1);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isOnline, setIsOnline] = useState(false);
+  const [eventPin, setEventPin] = useState("");
+  const [isImageUploading, setIsImageUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [previewUrl, setPreviewUrl] = useState("");
 
-  const handleImageUpload = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+  const handleImageUpload = (url: string) => {
+    setImage(url);
   };
-
+      
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -44,11 +47,13 @@ export default function CreateEventForm({ onClose }: CreateEventFormProps) {
       name,
       description: desc,
       location,
-      time: new Date(date).toISOString(),
+      dateTime: new Date(date).toISOString(),
       image: image || "",
       ispublic: isPublic,
-      islimited: limitedAttendees,
-      attandee: limitedAttendees ? attandee : null,
+      islimited: limitedParticipants,
+      maxParticipants: limitedParticipants ? maxParticipants : null,
+      isOnline,
+      eventPin: isPublic ? null : eventPin
     };
     
     try {
@@ -69,9 +74,9 @@ export default function CreateEventForm({ onClose }: CreateEventFormProps) {
       const result = response.status !== 204 ? await response.json() : null;
       console.log("Event created successfully:", result);
       toast({
-        variant:"default",
+        variant: "default",
         title: "Success",
-        description: "Event Created Succesfully",
+        description: "Event Created Successfully",
       });
       
       onClose();
@@ -79,9 +84,9 @@ export default function CreateEventForm({ onClose }: CreateEventFormProps) {
       console.error("Error creating event:", error);
       setError(error.message || "Failed to create event. Please try again.");
       toast({
-        variant:"destructive",
+        variant: "destructive",
         title: "Error!",
-        description: "There was a problem in creating event",
+        description: "There was a problem creating the event",
       });
     } finally {
       setIsLoading(false);
@@ -94,51 +99,157 @@ export default function CreateEventForm({ onClose }: CreateEventFormProps) {
 
       <div>
         <Label htmlFor="name">Event Name</Label>
-        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+        <Input 
+          id="name" 
+          value={name} 
+          onChange={(e) => setName(e.target.value)} 
+          required 
+        />
       </div>
 
       <div>
         <Label htmlFor="description">Description</Label>
-        <Textarea id="description" value={desc} onChange={(e) => setDesc(e.target.value)} required />
+        <Textarea 
+          id="description" 
+          value={desc} 
+          onChange={(e) => setDesc(e.target.value)} 
+          required 
+        />
       </div>
 
       <div>
         <Label htmlFor="coverImage">Cover Image</Label>
-        <ImageUpload onImageUpload={handleImageUpload} />
+        <ImageUpload 
+          onImageUpload={(url) => {
+            handleImageUpload(url);
+            setPreviewUrl(url);
+          }}
+          onUploadStart={() => {
+            setIsImageUploading(true);
+            setUploadProgress(0);
+          }}
+          onUploadEnd={() => setIsImageUploading(false)}
+          onProgress={setUploadProgress}
+          onError={(error) => {
+            toast({
+              variant: "destructive",
+              title: "Upload Error",
+              description: error,
+            });
+          }}
+        />
+        {isImageUploading && (
+          <div className="mt-2">
+            <Progress value={uploadProgress} className="h-2" />
+            <p className="text-xs text-muted-foreground mt-1">
+              Uploading... {uploadProgress}%
+            </p>
+          </div>
+        )}
+        {image && !isImageUploading && (
+          <div className="mt-4">
+            <Image 
+              src={image} 
+              alt="Preview" 
+              width={400} 
+              height={200} 
+              className="rounded-lg object-cover w-full h-48"
+            />
+          </div>
+        )}
       </div>
 
-      <div>
-        <Label htmlFor="location">Location</Label>
-        <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} required />
+      <div className="flex items-center space-x-2">
+        <Switch 
+          id="isOnline" 
+          checked={isOnline} 
+          onCheckedChange={() => setIsOnline(!isOnline)} 
+        />
+        <Label htmlFor="isOnline">Online Event</Label>
       </div>
+
+      {!isOnline && (
+        <div>
+          <Label htmlFor="location">Location</Label>
+          <Input 
+            id="location" 
+            value={location} 
+            onChange={(e) => setLocation(e.target.value)} 
+            required 
+          />
+        </div>
+      )}
 
       <div>
         <Label htmlFor="dateTime">Date and Time</Label>
-        <Input id="dateTime" value={date} onChange={(e) => setDate(e.target.value)} type="datetime-local" required />
+        <Input 
+          id="dateTime" 
+          value={date} 
+          onChange={(e) => setDate(e.target.value)} 
+          type="datetime-local" 
+          required 
+        />
       </div>
 
       <div className="flex items-center space-x-2">
-        <Switch id="isPublic" checked={isPublic} onCheckedChange={() => setIsPublic(!isPublic)} />
+        <Switch 
+          id="isPublic" 
+          checked={isPublic} 
+          onCheckedChange={() => setIsPublic(!isPublic)} 
+        />
         <Label htmlFor="isPublic">Public Event</Label>
       </div>
 
+      {!isPublic && (
+        <div>
+          <Label htmlFor="eventPin">Event PIN</Label>
+          <Input 
+            id="eventPin" 
+            value={eventPin} 
+            onChange={(e) => setEventPin(e.target.value)} 
+            required 
+            placeholder="Enter access PIN for private event"
+          />
+        </div>
+      )}
+
       <div className="flex items-center space-x-2">
-        <Switch id="limitedAttendees" checked={limitedAttendees} onCheckedChange={() => setLimitedAttendees(!limitedAttendees)} />
-        <Label htmlFor="limitedAttendees">Limited Attendees</Label>
+        <Switch 
+          id="limitedParticipants" 
+          checked={limitedParticipants} 
+          onCheckedChange={() => setLimitedParticipants(!limitedParticipants)} 
+        />
+        <Label htmlFor="limitedParticipants">Limit Participants</Label>
       </div>
 
-      {limitedAttendees && (
+      {limitedParticipants && (
         <div>
-          <Label htmlFor="maxAttendees">Maximum Attendees</Label>
-          <Input id="maxAttendees" type="number" min="1" value={attandee} onChange={(e) => setAttandee(Number(e.target.value))} required />
+          <Label htmlFor="maxParticipants">Maximum Participants</Label>
+          <Input 
+            id="maxParticipants" 
+            type="number" 
+            min="1" 
+            value={maxParticipants} 
+            onChange={(e) => setMaxParticipants(Number(e.target.value))} 
+            required 
+          />
         </div>
       )}
 
       {error && <p className="text-red-500">{error}</p>}
 
       <div className="flex space-x-4">
-        <Button type="submit" disabled={isLoading}>
+        <Button 
+          type="submit" 
+          disabled={isLoading || isImageUploading}
+          className="relative"
+        >
           {isLoading ? "Creating..." : "Create Event"}
+          {isImageUploading && (
+            <span className="ml-2 text-xs">
+              (Waiting for image upload...)
+            </span>
+          )}
         </Button>
       </div>
     </form>

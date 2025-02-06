@@ -62,9 +62,19 @@ export async function PUT(request: NextRequest) {
         location: body.location,
         dateTime: eventDateTime,
         islimited: body.islimited,
-        attendee: body.islimited ? body.attendee : null,
+        maxParticipants: body.islimited ? body.maxParticipants : null,
         ispublic: body.ispublic,
+        eventPin: body.ispublic ? null : body.eventPin,
+        meetingId: body.isOnline ? (existingEvent.meetingId || crypto.randomUUID()) : null,
       },
+    });
+
+    await prisma.activity.create({
+      data: {
+        userId: session.user.id,
+        type: "EVENT_EDIT",
+        description: `Edited event: ${updatedEvent.name}`
+      }
     });
 
     return NextResponse.json(updatedEvent);

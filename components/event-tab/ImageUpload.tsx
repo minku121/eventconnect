@@ -2,29 +2,88 @@ import { useState, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import Image from 'next/image'
+import { Progress } from "@/components/ui/progress"
 
 interface ImageUploadProps {
-  onImageUpload: (file: File) => void
+  onImageUpload: (url: string) => void
+  onUploadStart: () => void
+  onUploadEnd: () => void
+  onProgress: (progress: number) => void
+  onError?: (error: string) => void
 }
 
-export default function ImageUpload({ onImageUpload }: ImageUploadProps) {
+export default function ImageUpload({ 
+  onImageUpload, 
+  onUploadStart,
+  onUploadEnd,
+  onProgress,
+  onError
+}: ImageUploadProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      onImageUpload(file)
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string)
+      try {
+        setIsUploading(true)
+        onUploadStart()
+        onProgress(0)
+        
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const xhr = new XMLHttpRequest()
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable) {
+            const progress = Math.round((event.loaded / event.total) * 100)
+            setUploadProgress(progress)
+            onProgress(progress)
+          }
+        })
+
+        xhr.open('POST', '/api/upload')
+        xhr.responseType = 'json'
+
+        xhr.onload = () => {
+          if (xhr.status === 200) {
+            const result = xhr.response
+            onImageUpload(result.url)
+            setPreviewUrl(result.url)
+          } else {
+            const error = xhr.response?.error || 'Upload failed'
+            console.error('Upload failed:', error)
+            onError?.(error)
+          }
+          setIsUploading(false)
+          onUploadEnd()
+        }
+
+        xhr.onerror = () => {
+          const error = 'Network error during upload'
+          console.error('Upload error:', error)
+          onError?.(error)
+          setIsUploading(false)
+          onUploadEnd()
+        }
+
+        xhr.send(formData)
+
+      } catch (error) {
+        console.error('Upload failed:', error)
+        onError?.(error instanceof Error ? error.message : 'Upload failed')
+        setIsUploading(false)
+        onUploadEnd()
       }
-      reader.readAsDataURL(file)
     }
   }
 
   const handleButtonClick = () => {
-    fileInputRef.current?.click()
+    if (!isUploading) {
+      fileInputRef.current?.click()
+    }
   }
 
   return (
@@ -37,25 +96,23 @@ export default function ImageUpload({ onImageUpload }: ImageUploadProps) {
         className="hidden"
         onChange={handleFileChange}
         ref={fileInputRef}
+        disabled={isUploading}
       />
       <Button 
         type="button" 
         onClick={handleButtonClick}
-        className="w-full transition-all duration-200 ease-in-out hover:bg-primary-dark"
+        className="w-full relative"
+        disabled={isUploading}
       >
-        Upload Image
+        {isUploading ? (
+          <div className="w-full flex items-center justify-center">
+            <span className="mr-2">Uploading...</span>
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+          </div>
+        ) : (
+          'Upload Image'
+        )}
       </Button>
-      {previewUrl && (
-        <div className="mt-4">
-          <Image 
-            src={previewUrl || "/placeholder.svg"} 
-            alt="Preview" 
-            width={400} 
-            height={200} 
-            className="rounded-lg object-cover w-full h-48"
-          />
-        </div>
-      )}
     </div>
   )
 }
