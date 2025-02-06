@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     const eventData = {
       name: body.name,
       description: body.description,
-      location: body.location,
+      location: body.isOnline ? "Online" : body.location, // Set location to "Online" if event is online
       dateTime: eventDate,
       image: body.image,
       ispublic: body.ispublic,
