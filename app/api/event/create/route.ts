@@ -41,7 +41,11 @@ export async function POST(req: Request) {
       eventPin: eventPin,
       createdById: Number(session.user.id), // Changed from parseInt to Number
       participantCount: 0, // Initialize with 0 participants
-      eventId: undefined // Let Prisma handle the UUID default
+      eventId: undefined, // Let Prisma handle the UUID default
+      meetingStarted: false,
+      meetingId: body.isOnline ? crypto.randomUUID() : null,
+      zegoAppId: process.env.ZEGO_APP_ID,
+      zegoServerSecret: process.env.ZEGO_SERVER_SECRET,
     }
 
     const event = await prisma.event.create({

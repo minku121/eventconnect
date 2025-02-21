@@ -3,6 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button"
 import { EditEventPopover } from './edit_event_popover'
 import DeleteEventForm from './delete_event_form'
+import { useSession } from 'next-auth/react'
 
 interface Event {
   id: string
@@ -19,6 +20,8 @@ interface Event {
   eventId:string,
   eventPin:string,
   participantCount:number
+  meetingStarted: boolean
+  createdById:any
 }
 
 interface EventCardProps {
@@ -28,10 +31,16 @@ interface EventCardProps {
 }
 
 export default function EventCard({ event, onEventUpdate, onEventDelete }: EventCardProps) {
-  const handleViewEvent = () => {
-    // TODO: Implement view event logic
-    console.log('Viewing event:', event.id)
-  }
+  const {data:session} = useSession();
+
+  
+
+  const handleStartMeeting = async () => {
+    // Update meeting status in DB
+    
+    window.location.href = `/account/manage-events/startmeeting/${event.eventId}`;
+  };
+
 
   return (
     <Card className="flex flex-col h-full">
@@ -65,12 +74,6 @@ export default function EventCard({ event, onEventUpdate, onEventDelete }: Event
       </CardContent>
       <CardFooter className="mt-auto py-4 px-4">
         <div className="grid grid-cols-3 gap-2 w-full">
-          <Button 
-            className="w-full"
-            variant="outline"
-            onClick={handleViewEvent}>
-            View
-          </Button>
           <EditEventPopover 
             event={event}
             onSave={(updatedEvent) => {
@@ -78,19 +81,17 @@ export default function EventCard({ event, onEventUpdate, onEventDelete }: Event
                 //@ts-ignore
                 onEventUpdate(updatedEvent)
               }
-              
             }}
           />
           <DeleteEventForm 
-          
             event={event} 
             onDelete={(deletedEventId) => {
               if (onEventDelete) {
                 onEventDelete(deletedEventId)
               }
-             
             }}
           />
+       <Button onClick={handleStartMeeting}>Start Meet</Button>
         </div>
       </CardFooter>
     </Card>

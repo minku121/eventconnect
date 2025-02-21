@@ -11,6 +11,9 @@ interface Event {
   image: string | null;
   participantCount: number;
   maxParticipants?: number;
+  meetingStarted:boolean;
+  eventId:string
+  
   createdBy: {
     id: string;
     name: string;
@@ -73,6 +76,9 @@ export default function JoinedEventsPage() {
               imageUrl={event.image || "/placeholder.svg"}
               seatsLeft={event.maxParticipants ? event.maxParticipants - event.participantCount : 0}
               participants={event.participantCount}
+              meetingStarted={event.meetingStarted}
+              eventId={event.eventId}
+              
             />
           ))}
         </div>

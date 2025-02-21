@@ -9,9 +9,11 @@ type EventCardProps = {
   imageUrl: string
   seatsLeft: number
   participants: number
+  meetingStarted: boolean
+  eventId:string
 }
 
-export default function JoinedEventCard({ id, title, date, location, imageUrl, seatsLeft, participants }: EventCardProps) {
+export default function JoinedEventCard({ id, title, date, location, imageUrl, seatsLeft, participants, meetingStarted ,eventId }: EventCardProps) {
   return (
     <div className="border rounded-lg shadow-md overflow-hidden">
       <div className="relative h-48">
@@ -36,8 +38,16 @@ export default function JoinedEventCard({ id, title, date, location, imageUrl, s
             <span>{participants} participants</span>
           </div>
         </div>
-        <button className="w-full py-2 px-4 rounded-md bg-foreground text-background transition duration-300">
-          Check-in
+        <button 
+          className={`w-full py-2 px-4 rounded-md transition duration-300 ${
+            meetingStarted 
+              ? "bg-foreground text-background hover:bg-primary-dark" 
+              : "bg-gray-300 cursor-not-allowed"
+          }`}
+          disabled={!meetingStarted}
+          onClick={() => window.location.href = `/video-call/${eventId}?role=participant`}
+        >
+          {meetingStarted ? "Join Meeting" : "Meeting Not Started"}
         </button>
       </div>
     </div>

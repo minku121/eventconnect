@@ -46,10 +46,11 @@ model Event {
   meetingId    String?    @unique
   eventId      String     @unique @default(uuid())
   eventPin     String?    @default("null")
-
+  meetingStarted Boolean @default(false)
   participants User[]     @relation("EventParticipant")
   participantCount Int     @default(0) @map("participant_count")
-
+  zegoAppId    String?  // Add this
+  zegoServerSecret String?  // Add this
   @@map("events")
   User User[] @relation("EventCreator")
 }

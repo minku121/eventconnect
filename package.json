@@ -51,6 +51,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.0.5",
+    "zego-express-engine-webrtc": "^3.7.4",
     "zod": "^3.24.1"
   },
   "devDependencies": {

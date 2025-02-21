@@ -42,7 +42,8 @@ export async function GET(request: NextRequest) {
         meetingId:true,
         eventId:true,
         eventPin:true,
-        participantCount:true
+        participantCount:true,
+        meetingStarted: true
       }
     });
 
