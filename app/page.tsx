@@ -57,7 +57,9 @@ export default function Home() {
 
       <MarqueeDemo />
 
-      <CTASection/>
+      <div className="flex items-center justify-center w-full">
+         <CTASection/>
+      </div>
 
      <Footer/>
     </div>
