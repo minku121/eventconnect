@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
         }
       },
       orderBy: {
-        dateTime: "desc"
+        createdAt: "desc"
       }
     });
 
