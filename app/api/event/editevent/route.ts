@@ -60,7 +60,7 @@ export async function PUT(request: NextRequest) {
         description: body.description,
         image: body.image,
         location: body.location,
-        dateTime: eventDateTime,
+      
         islimited: body.islimited,
         maxParticipants: body.islimited ? body.maxParticipants : null,
         ispublic: body.ispublic,
