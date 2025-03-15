@@ -5,26 +5,24 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { getEventById } from "@/app/actions/events";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CertificateFlow } from "@/components/event-tab/CertificateFlow";
 
 
 const Room = () => {
-
   const { eventId } = useParams();
-
   const { data: session, status } = useSession();
-
   const router = useRouter();
-
   const myMeeting = useRef<HTMLDivElement>(null);
   const [isSessionReady, setIsSessionReady] = useState(false);
   const id = Number(session?.user.id);
+  const [showEndMeetingDialog, setShowEndMeetingDialog] = useState(false);
+  const [eventData, setEventData] = useState<any>(null);
+
   useEffect(() => {
     if (status === "authenticated") {
-
       setIsSessionReady(true);
-      
     }
-
   }, [status]);
 
   useEffect(() => {
@@ -40,10 +38,12 @@ const Room = () => {
         return;
       }
 
-      const event = await getEventById(eventId as string,id);
-      const meetingId = event.meetingId as string ;
+      const event = await getEventById(eventId as string, id);
+      setEventData(event);
+      const meetingId = event.meetingId as string;
       const eventcreator = event.createdBy.id;
       const currentuser = session?.user?.id;
+      console.log(event);
       
       if (!currentuser) {
         console.error("User ID not available");
@@ -56,7 +56,6 @@ const Room = () => {
         return false;
       }
 
-      // Update meeting status in DB
       const startResponse = await fetch('/api/event/start-meeting', {
         method: 'POST',
         headers: {
@@ -72,7 +71,6 @@ const Room = () => {
       }
 
       const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-        
         appID,
         serverSecret,
         meetingId,
@@ -99,18 +97,63 @@ const Room = () => {
         showRemoveUserButton: true,
         showTurnOffRemoteCameraButton: true,
         showTurnOffRemoteMicrophoneButton: true,
+        onLeaveRoom: () => {
+          handleEndMeeting();
+          
+        }
       });
     };
 
     startMeeting();
   }, [eventId, isSessionReady, session, router]);
 
+  const handleEndMeeting = async () => {
+    try {
+      const response = await fetch('/api/event/end-meeting', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ eventId })
+      });
+
+      if (response.ok) {
+        const endedEvent = await response.json();
+        setEventData(endedEvent);
+        setShowEndMeetingDialog(true);
+      }
+    } catch (error) {
+      console.error('Error ending meeting:', error);
+    }
+  };
+
   return (
-    <div
-      className="myCallContainer"
-      ref={myMeeting}
-      style={{ width: "100vw", height: "100vh" }}
-    ></div>
+    <>
+      <div
+        className="myCallContainer"
+        ref={myMeeting}
+        style={{ width: "100vw", height: "100vh" }}
+      ></div>
+
+      <Dialog open={showEndMeetingDialog} onOpenChange={setShowEndMeetingDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Meeting Ended</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm">
+              The meeting has been successfully ended. Would you like to distribute certificates now?
+            </p>
+            
+            <CertificateFlow 
+              event={eventData} 
+              onComplete={() => {
+                setShowEndMeetingDialog(false);
+                router.push(`/account/manage-events`);
+              }}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

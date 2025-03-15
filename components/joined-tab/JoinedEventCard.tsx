@@ -11,9 +11,11 @@ type EventCardProps = {
   participants: number
   meetingStarted: boolean
   eventId:string
+  hasCertificate: boolean
+  isPaidCertificate: boolean
 }
 
-export default function JoinedEventCard({ id, title, date, location, imageUrl, seatsLeft, participants, meetingStarted ,eventId }: EventCardProps) {
+export default function JoinedEventCard({ id, title, date, location, imageUrl, seatsLeft, participants, meetingStarted ,eventId, hasCertificate, isPaidCertificate }: EventCardProps) {
   return (
     <div className="border rounded-lg shadow-md overflow-hidden">
       <div className="relative h-48">
@@ -40,14 +42,21 @@ export default function JoinedEventCard({ id, title, date, location, imageUrl, s
         </div>
         <button 
           className={`w-full py-2 px-4 rounded-md transition duration-300 ${
-            meetingStarted 
-              ? "bg-foreground text-background hover:bg-primary-dark" 
-              : "bg-gray-300 cursor-not-allowed"
+            hasCertificate ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-300 cursor-not-allowed'
           }`}
-          disabled={!meetingStarted}
-          onClick={() => window.location.href = `/video-call/${eventId}?role=participant`}
+          disabled={!hasCertificate}
+          onClick={() => {
+            if (isPaidCertificate) {
+              // Handle payment flow
+              alert('Redirecting to payment gateway...');
+            } else {
+              window.location.href = `/certificates/${eventId}`;
+            }
+          }}
         >
-          {meetingStarted ? "Join Meeting" : "Meeting Not Started"}
+          {hasCertificate ? 
+            (isPaidCertificate ? 'Purchase Certificate' : 'Download Certificate') : 
+            'Certificate Not Available'}
         </button>
       </div>
     </div>

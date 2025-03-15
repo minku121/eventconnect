@@ -66,12 +66,30 @@ export default function CreateEventForm({ onClose }: CreateEventFormProps) {
       });
   
       if (!response.ok) {
-        const errorText = await response.text();
-        const errorMessage = errorText ? JSON.parse(errorText)?.error : "Failed to create event.";
-        throw new Error(errorMessage);
+        const errorData = await response.json();
+        
+        if (response.status === 400) {
+          const errorMessage = typeof errorData === 'string' ? errorData : errorData.error || "Invalid request";
+          setError(errorMessage);
+          toast({
+            variant: "destructive",
+            title: "Validation Error",
+            description: errorMessage,
+          });
+          return;
+        }
+
+        // Handle non-JSON error responses
+        if (typeof errorData === 'string') {
+          throw new Error(errorData);
+        }
+        throw new Error(errorData.error || "Failed to create event.");
+       
       }
   
       const result = response.status !== 204 ? await response.json() : null;
+
+      
       console.log("Event created successfully:", result);
       toast({
         variant: "default",
@@ -81,12 +99,12 @@ export default function CreateEventForm({ onClose }: CreateEventFormProps) {
       
       onClose();
     } catch (error: any) {
-      console.error("Error creating event:", error);
-      setError(error.message || "Failed to create event. Please try again.");
+      const errorMessage = error.message || "There was a problem creating the event";
+      setError(errorMessage);
       toast({
         variant: "destructive",
         title: "Error!",
-        description: "There was a problem creating the event",
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);

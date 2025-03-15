@@ -25,6 +25,7 @@ model User {
 
   @@map("users")
   Event Event[]
+  Certificate Certificate[]
 }
 
 model Event {
@@ -33,7 +34,8 @@ model Event {
   description  String     @default("")
   location     String?
   image        String?    @default("https://i.sstatic.net/y9DpT.jpg")
-  dateTime     DateTime   @default(now())
+  startTime    DateTime   @default(now())
+  endTime      DateTime   @default(dbgenerated("(now() + interval '1 hour')"))
   analytics    EventAnalytics?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
@@ -51,9 +53,20 @@ model Event {
   participantCount Int     @default(0) @map("participant_count")
   zegoAppId    String?  // Add this
   zegoServerSecret String?  // Add this
+  durationMinutes Int? // Meeting duration in minutes
+  endedAt DateTime? // When meeting was actually ended
   @@map("events")
   User User[] @relation("EventCreator")
+    status      EventStatus @default(SCHEDULED)
+    Certificate Certificate[]
 }
+
+enum EventStatus {
+  SCHEDULED
+  ACTIVE
+  ENDED
+}
+
 
 model Notification {
   id           Int             @id @default(autoincrement())
@@ -75,17 +88,23 @@ model Activity {
 }
 
 model EventAnalytics {
-  id           Int             @id @default(autoincrement())
-  eventId      Int             @unique
-  event        Event           @relation(fields: [eventId], references: [id])
-  totalJoined  Int             @default(0)
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  id             Int      @id @default(autoincrement())
+  eventId        Int      @unique
+  event          Event    @relation(fields: [eventId], references: [id])
+  totalJoined    Int      @default(0)
+  peakParticipants Int    @default(0)
+  averageDuration  Float  @default(0)
+  joinRate         Float  @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 enum NotificationType {
   EVENT_JOINED
+  EVENT_CREATED
   NEW_MESSAGE
+  CERTIFICATE_AVAILABLE
+
   OTHER
 }
 
@@ -95,4 +114,17 @@ enum ActivityType {
   EVENT_DELETION
   EVENT_JOINED
   OTHER
+  
+}
+
+model Certificate {
+  id          Int      @id @default(autoincrement())
+  eventId     Int
+  event       Event    @relation(fields: [eventId], references: [id])
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  downloadUrl String
+  isPaid      Boolean  @default(false)
+  price       Decimal? @db.Decimal(10,2) // Add this line
+  createdAt   DateTime @default(now())
 }

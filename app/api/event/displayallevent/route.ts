@@ -19,7 +19,7 @@ export async function GET(request: Request) {
           description: true,
           image: true,
           location: true,
-          dateTime: true,
+          endTime: true,
           maxParticipants: true,
           participantCount:true,
           ispublic: true,

@@ -73,6 +73,13 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        if (new Date() > event.endTime) {
+            return NextResponse.json(
+                { error: "This event has already ended" },
+                { status: 400 }
+            );
+        }
+
         // Update event and user in transaction
         const [updatedEvent, updatedUser] = await prisma.$transaction([
             prisma.event.update({

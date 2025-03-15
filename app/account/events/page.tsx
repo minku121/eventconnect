@@ -16,7 +16,7 @@ interface Event {
   name: string;
   location: string;
   image: string | null;
-  dateTime: string;
+  endTime: string;
   createdAt: string;
   updatedAt: string;
   participantCount:number,
@@ -243,7 +243,7 @@ export default function Page() {
                             </div>
                             <div className="flex items-center gap-2">
                               <Calendar className="w-4 h-4" />
-                              {new Date(event.dateTime).toLocaleDateString()}
+                              {new Date(event.endTime).toLocaleDateString()}
                             </div>
                           </div>
 
@@ -251,7 +251,7 @@ export default function Page() {
                           <div className="grid grid-cols-2 gap-4">
                             <div className="flex items-center gap-2">
                               <Clock className="w-4 h-4" />
-                              {new Date(event.dateTime).toLocaleTimeString()}
+                              {new Date(event.endTime).toLocaleTimeString()}
                             </div>
                             <div className="flex items-center gap-2">
                               <Users className="w-4 h-4" />

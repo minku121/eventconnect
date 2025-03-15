@@ -9,6 +9,8 @@ export const getEventById = async (eventId: string, userId: number) => {
       select: {
         id: true,
         name: true,
+        participants: true,
+        meetingStarted:true,
         meetingId: true,
         createdBy: {
           select: {
@@ -17,7 +19,6 @@ export const getEventById = async (eventId: string, userId: number) => {
             
           }
         },
-        participants: { where: { id: userId } },
       }
     });
 

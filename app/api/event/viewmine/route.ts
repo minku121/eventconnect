@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
         description: true,
         image: true,
         location: true,
-        dateTime: true,
+        createdAt: true,
         islimited:true,
         maxParticipants: true,
         ispublic: true,
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
 
     const eventsWithISOString = events.map(event => ({
       ...event,
-      dateTime: event.dateTime.toISOString()
+      dateTime: event.createdAt.toISOString()
     }));
 
     return NextResponse.json(eventsWithISOString);
@@ -58,6 +58,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       { error: "Failed to fetch events" },
       { status: 500 }
+      
     );
   }
 }

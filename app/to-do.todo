@@ -1,2 +1,11 @@
-to do seprate verification for start meeting and join meeting
-implement the eventEnd feature 
+to do separate verification for start meeting and join meeting
+implement the eventEnd feature
+add meeting duration validation (start < end)
+implement participant capacity checks for events
+add token expiration based on event duration
+create meeting end API endpoint
+add host controls for meeting termination
+implement event status lifecycle (scheduled/active/ended)
+add validation for event PIN complexity
+create participant count analytics
+implement automatic meeting termination at end time 
