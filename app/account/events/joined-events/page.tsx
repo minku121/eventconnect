@@ -77,8 +77,7 @@ export default function JoinedEventsPage() {
               seatsLeft={event.maxParticipants ? event.maxParticipants - event.participantCount : 0}
               participants={event.participantCount}
               meetingStarted={event.meetingStarted}
-              eventId={event.eventId}
-              
+              eventId={event.eventId} hasCertificate={false} isPaidCertificate={false}              
             />
           ))}
         </div>
