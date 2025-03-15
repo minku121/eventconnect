@@ -42,7 +42,7 @@ export default function JoinedEventCard({ id, title, date, location, imageUrl, s
           <button 
             className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-300"
             onClick={() => {
-              window.location.href = `/meeting/${eventId}`;
+              window.location.href = `/video-call/${eventId}`;
             }}
           >
             Join Meeting
