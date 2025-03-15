@@ -115,7 +115,7 @@ const Room = () => {
         body: JSON.stringify({ eventId })
       });
 
-      if (response.ok) {
+      if (response.ok ) {
         const endedEvent = await response.json();
         setEventData(endedEvent);
         setShowEndMeetingDialog(true);
@@ -128,13 +128,13 @@ const Room = () => {
   return (
     <>
       <div
-        className="myCallContainer"
+        className="myCallContainer fixed w-full h-full flex items-center justify-center"
         ref={myMeeting}
-        style={{ width: "100vw", height: "100vh" }}
+        style={{ width: "90%", height: "100%", position: "absolute" }}
       ></div>
 
       <Dialog open={showEndMeetingDialog} onOpenChange={setShowEndMeetingDialog}>
-        <DialogContent>
+        <DialogContent className="z-[1000]">
           <DialogHeader>
             <DialogTitle>Meeting Ended</DialogTitle>
           </DialogHeader>
