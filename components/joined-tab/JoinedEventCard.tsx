@@ -10,12 +10,10 @@ type EventCardProps = {
   seatsLeft: number
   participants: number
   meetingStarted: boolean
-  eventId:string
-  hasCertificate: boolean
-  isPaidCertificate: boolean
+  eventId: string
 }
 
-export default function JoinedEventCard({ id, title, date, location, imageUrl, seatsLeft, participants, meetingStarted ,eventId, hasCertificate, isPaidCertificate }: EventCardProps) {
+export default function JoinedEventCard({ id, title, date, location, imageUrl, seatsLeft, participants, meetingStarted, eventId }: EventCardProps) {
   return (
     <div className="border rounded-lg shadow-md overflow-hidden">
       <div className="relative h-48">
@@ -40,26 +38,17 @@ export default function JoinedEventCard({ id, title, date, location, imageUrl, s
             <span>{participants} participants</span>
           </div>
         </div>
-        <button 
-          className={`w-full py-2 px-4 rounded-md transition duration-300 ${
-            hasCertificate ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-300 cursor-not-allowed'
-          }`}
-          disabled={!hasCertificate}
-          onClick={() => {
-            if (isPaidCertificate) {
-              // Handle payment flow
-              alert('Redirecting to payment gateway...');
-            } else {
-              window.location.href = `/certificates/${eventId}`;
-            }
-          }}
-        >
-          {hasCertificate ? 
-            (isPaidCertificate ? 'Purchase Certificate' : 'Download Certificate') : 
-            'Certificate Not Available'}
-        </button>
+        {meetingStarted && (
+          <button 
+            className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-300"
+            onClick={() => {
+              window.location.href = `/meeting/${eventId}`;
+            }}
+          >
+            Join Meeting
+          </button>
+        )}
       </div>
     </div>
   )
 }
-
