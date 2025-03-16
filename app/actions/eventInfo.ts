@@ -33,10 +33,8 @@ export const getEventInfo = async (eventId: string, userId: number) => {
           select: {
             id: true,
             name: true,
-            
           }
         },
-        
       }
     });
 
@@ -44,10 +42,14 @@ export const getEventInfo = async (eventId: string, userId: number) => {
       throw new Error('Event not found');
     }
 
+    // Check if user is the event creator
+    if (event.createdBy.id !== userId) {
+      throw new Error('User Not Permitted to view Data');
+    }
+
     return event;
   } catch (error) {
     console.error('Error fetching event:', error);
-    throw new Error('Failed to fetch event details');
+    throw error instanceof Error ? error : new Error('Failed to fetch event details');
   }
 };
-

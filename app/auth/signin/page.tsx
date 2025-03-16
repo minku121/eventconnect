@@ -40,7 +40,11 @@ export default function LoginPage() {
     } else if (result?.url) {
       const urlParams = new URLSearchParams(window.location.search)
       const callbackUrl = urlParams.get('callbackUrl')
-      router.push(callbackUrl || '/account')
+      if (!callbackUrl || callbackUrl === '/') {
+        router.push('/account')
+      } else {
+        router.push(callbackUrl)
+      }
     }
 
     setLoading(false)  // Stop loading

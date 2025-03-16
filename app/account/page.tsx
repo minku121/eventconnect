@@ -2,6 +2,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowRight, Calendar, Flag, Users, PenToolIcon as Tool } from "lucide-react"
+import { getServerSession } from "next-auth"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,7 +15,6 @@ export const metadata: Metadata = {
 
 // Dummy data (replace with actual data fetching in a real application)
 const userData = {
-  name: "John Doe",
   eventsJoined: 12,
   eventsManaged: 5,
   recentReports: 2,
@@ -35,10 +35,13 @@ const userData = {
   ],
 }
 
-export default function DashboardOverview() {
+export default async function DashboardOverview() {
+  const session = await getServerSession()
+  const userName = session?.user?.name || "User"
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Welcome back, {userData.name}!</h1>
+      <h1 className="text-3xl font-bold mb-8">Welcome back, {userName}!</h1>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
         <Card>
@@ -164,4 +167,3 @@ export default function DashboardOverview() {
     </div>
   )
 }
-

@@ -37,8 +37,8 @@ import { use, useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { EditEventDialog } from "@/components/event-tab/EditEventDialog"
+import { useSession} from "next-auth/react";
 
-// Add this after the imports
 const animationStyles = {
   "@keyframes pulseSlow": {
     "0%, 100%": { boxShadow: "0 0 15px rgba(255,255,255,0.5)" },
@@ -54,6 +54,7 @@ export default function EventDetailPage({
 }: {
   params: Promise<{ eventId: string }>
 }) {
+  const { data: session, status } = useSession();
   const [event, setEvent] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -68,25 +69,44 @@ export default function EventDetailPage({
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const data = await getEventInfo(eventId, 0)
-        setEvent(data)
+       
+        const data = await getEventInfo(eventId, session?.user.id || 0);
+        setEvent(data);
 
-        // Convert event data to JSON and log it
-        const eventJson = JSON.stringify(data, null, 2)
-        console.log("Event Data:", eventJson)
+        // Check if current user is the event owner
+        if (session?.user.id !== data.createdBy.id) {
+          toast({
+            title: "Unauthorized",
+            description: "You are not the owner of this event",
+            variant: "destructive",
+          });
+          router.push("/account/manage-events");
+          return;
+        }
+
+      
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to fetch event"
-        setError(errorMessage)
-        console.error("Error:", JSON.stringify({ error: errorMessage }, null, 2))
+        const errorMessage = err instanceof Error ? err.message : "Failed to fetch event";
+        setError(errorMessage);
+        console.error("Error:", JSON.stringify({ error: errorMessage }, null, 2));
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchEvent()
-  }, [eventId])
+    if (session) {
+      fetchEvent();
+    }
+  }, [eventId, session, router, toast]);
 
   const handleDeleteEvent = async () => {
+    if (!event) return;
+
     try {
       const response = await fetch("/api/event/deleteevent", {
         method: "DELETE",
@@ -94,26 +114,26 @@ export default function EventDetailPage({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ id: event.id }),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to delete event")
+        throw new Error("Failed to delete event");
       }
 
       toast({
         title: "Success",
         description: "Event deleted successfully",
-      })
-      router.push("/account/manage-events")
+      });
+      router.push("/account/manage-events");
     } catch (error) {
-      console.error("Error deleting event:", error)
+      console.error("Error deleting event:", error);
       toast({
         title: "Error",
         description: "Failed to delete event",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const handleStartMeeting = () => {
     router.push(`/account/manage-events/startmeeting/${eventId}`)
