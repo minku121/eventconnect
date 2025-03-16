@@ -44,7 +44,7 @@ export const getEventInfo = async (eventId: string, userId: number) => {
 
     // Check if user is the event creator
     if (event.createdBy.id !== userId) {
-      throw new Error('User Not Permitted to view Data');
+      throw new Error('Unauthorized Not Permitted to view data', { cause: { status: 401 } });
     }
 
     return event;
