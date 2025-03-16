@@ -9,26 +9,26 @@ export const getEventInfo = async (eventId: string, userId: number) => {
       select: {
         id: true,
         name: true,
-        description:true,
-        location:true,
-        image:true,
-        startTime:true,
-        createdAt:true,
-        ispublic:true,
-        maxParticipants:true,
-        participantCount:true,
-        status:true,
-        participants:{
-          select:{
-            id:true,
-            email:true,
-            name:true
+        description: true,
+        location: true,
+        image: true,
+        startTime: true,
+        createdAt: true,
+        ispublic: true,
+        maxParticipants: true,
+        participantCount: true,
+        status: true,
+        participants: {
+          select: {
+            id: true,
+            email: true,
+            name: true
           }
         },
-        meetingStarted:true,
+        meetingStarted: true,
         meetingId: true,
-        islimited:true,
-        isOnline:true,
+        islimited: true,
+        isOnline: true,
         createdBy: {
           select: {
             id: true,
@@ -39,17 +39,17 @@ export const getEventInfo = async (eventId: string, userId: number) => {
     });
 
     if (!event) {
-      throw new Error('Event not found');
+      return { error: 'Event not found' };
     }
 
     // Check if user is the event creator
     if (event.createdBy.id !== userId) {
-      throw new Error('Unauthorized Not Permitted to view data', { cause: { status: 401 } });
+      return { error: 'Unauthorized: You are not permitted to view this event' };
     }
 
     return event;
   } catch (error) {
     console.error('Error fetching event:', error);
-    throw error instanceof Error ? error : new Error('Failed to fetch event details');
+    return { error: 'An unexpected error occurred while fetching event details' };
   }
 };

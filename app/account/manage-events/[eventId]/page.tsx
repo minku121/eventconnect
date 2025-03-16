@@ -69,8 +69,12 @@ export default function EventDetailPage({
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-       
         const data = await getEventInfo(eventId, session?.user.id || 0);
+        
+        if ('error' in data) {
+          throw new Error(data.error);
+        }
+
         setEvent(data);
 
         // Check if current user is the event owner
