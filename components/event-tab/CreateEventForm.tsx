@@ -47,7 +47,7 @@ export default function CreateEventForm({ onClose }: CreateEventFormProps) {
       name,
       description: desc,
       location,
-      dateTime: new Date(date).toISOString(),
+      eventDateTime: new Date(date).toISOString(),
       image: image || "",
       ispublic: isPublic,
       islimited: limitedParticipants,

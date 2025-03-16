@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       }
     });
 
-    // Get participants for the event through the User relation
+   
     const participants = await prisma.user.findMany({
       where: {
         joinedEvents: {
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
       select: { id: true }
     });
 
-    // Create notification for participants
+   
     if (participants.length > 0) {
       await prisma.notification.createMany({
         data: participants.map(({ id }) => ({

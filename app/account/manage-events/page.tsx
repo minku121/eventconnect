@@ -6,7 +6,7 @@ import CreateEventForm from '@/components/event-tab/CreateEventForm';
 import JoinEventForm from '@/components/event-tab/JoinEventForm';
 import EventCard from '@/components/event-tab/EventCard';
 import Modal from '@/components/event-tab/Modal';
-import { SidebarComponent } from '@/components/inner/sidebar-content';
+
 import { useSession } from 'next-auth/react';
 import { Skeleton } from "@/components/ui/skeleton"
 

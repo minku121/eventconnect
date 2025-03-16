@@ -8,7 +8,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     
     
-    if (!body.id || !body.name || !body.location || !body.dateTime) {
+    if (!body.id || !body.name || !body.location || !body.eventDateTime) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -43,16 +43,16 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Convert datetime to proper Date object (already handles ISO strings)
-    const eventDateTime = new Date(body.dateTime);
-    if (isNaN(eventDateTime.getTime())) {
+    
+    const eventDate = new Date(body.eventDateTime);
+    if (isNaN(eventDate.getTime())) {
       return NextResponse.json(
         { error: "Invalid datetime format" },
         { status: 400 }
       );
     }
 
-    // Update event in database
+    
     const updatedEvent = await prisma.event.update({
       where: { id: body.id },
       data: {
@@ -60,7 +60,7 @@ export async function PUT(request: NextRequest) {
         description: body.description,
         image: body.image,
         location: body.location,
-      
+        startTime:eventDate,
         islimited: body.islimited,
         maxParticipants: body.islimited ? body.maxParticipants : null,
         ispublic: body.ispublic,

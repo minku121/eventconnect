@@ -11,7 +11,7 @@ interface Event {
   description: string
   image: string
   location: string
-  dateTime: string
+  startTime:string,
   islimited:boolean
   maxParticipants?: number
   ispublic: boolean
@@ -22,6 +22,7 @@ interface Event {
   participantCount:number
   meetingStarted: boolean
   createdById:any
+  createdAt:string
 }
 
 interface EventCardProps {
@@ -33,12 +34,13 @@ interface EventCardProps {
 export default function EventCard({ event, onEventUpdate, onEventDelete }: EventCardProps) {
   const {data:session} = useSession();
 
+  console.log(event)
   
 
-  const handleStartMeeting = async () => {
-    // Update meeting status in DB
+  const handleManageEvent = async () => {
     
-    window.location.href = `/account/manage-events/startmeeting/${event.eventId}`;
+    
+    window.location.href = `/account/manage-events/${event.eventId}`;
   };
 
 
@@ -65,7 +67,8 @@ export default function EventCard({ event, onEventUpdate, onEventDelete }: Event
         </div>
         <div className="space-y-2">
           <p className="text-sm"><strong>Location:</strong> {event.location}</p>
-          <p className="text-sm"><strong>Date & Time:</strong> {new Date(event.dateTime).toLocaleString()}</p>
+          <p className="text-sm"><strong>Start At:</strong> {new Date(event.startTime).toLocaleString()}</p>
+          <p className="text-sm"><strong>Created At:</strong> {new Date(event.createdAt).toLocaleString()}</p>
           {event.islimited && (
             <p className="text-sm"><strong>Max Participants:</strong> {event.maxParticipants}</p>
           )}
@@ -73,8 +76,9 @@ export default function EventCard({ event, onEventUpdate, onEventDelete }: Event
         </div>
       </CardContent>
       <CardFooter className="mt-auto py-4 px-4">
-        <div className="grid grid-cols-3 gap-2 w-full">
+        <div className="grid grid-cols-2 gap-4 w-full">
           <EditEventPopover 
+          //@ts-ignore
             event={event}
             onSave={(updatedEvent) => {
               if (onEventUpdate) {
@@ -83,15 +87,15 @@ export default function EventCard({ event, onEventUpdate, onEventDelete }: Event
               }
             }}
           />
-          <DeleteEventForm 
+          {/* <DeleteEventForm 
             event={event} 
             onDelete={(deletedEventId) => {
               if (onEventDelete) {
                 onEventDelete(deletedEventId)
               }
             }}
-          />
-       <Button onClick={handleStartMeeting}>Start Meet</Button>
+          /> */}
+       <Button onClick={handleManageEvent}>Manage Event</Button>
         </div>
       </CardFooter>
     </Card>

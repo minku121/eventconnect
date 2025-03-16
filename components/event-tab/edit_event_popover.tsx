@@ -16,12 +16,13 @@ interface Event {
   description: string
   image: string
   location: string
-  dateTime: string
+  eventDateTime: string
   maxParticipants?: number
   ispublic: boolean
   islimited:boolean
   isOnline: boolean
   eventPin:string
+  startTime:string
 }
 
 interface EditEventPopoverProps {
@@ -34,7 +35,7 @@ export function EditEventPopover({ event, onSave }: EditEventPopoverProps) {
   const [description, setDescription] = useState(event.description)
   const [image, setImage] = useState(event.image)
   const [location, setLocation] = useState(event.location)
-  const [dateTime, setDateTime] = useState(event.dateTime)
+  const [eventDateTime, setEventDateTime] = useState(event.startTime)
   const [islimited, setIsLimited] = useState(event.islimited)
   const [maxParticipants, setmaxParticipants] = useState(event.maxParticipants || 1)
   const [ispublic, setIsPublic] = useState(event.ispublic)
@@ -64,7 +65,7 @@ export function EditEventPopover({ event, onSave }: EditEventPopoverProps) {
           description,
           image,
           location: isOnline ? 'Online' : location,
-          dateTime,
+          eventDateTime: eventDateTime,
           islimited,
           maxParticipants: islimited ? maxParticipants : undefined,
           ispublic,
@@ -215,12 +216,12 @@ export function EditEventPopover({ event, onSave }: EditEventPopoverProps) {
           )}
           
           <div>
-            <Label htmlFor="datetime">Date & Time</Label>
+            <Label htmlFor="eventDateTime">Event Date & Time</Label>
             <Input
               type="datetime-local"
-              id="datetime"
-              value={formatDateTimeLocal(dateTime)}
-              onChange={(e) => setDateTime(e.target.value)}
+              id="eventDateTime"
+              value={formatDateTimeLocal(eventDateTime)}
+              onChange={(e) => setEventDateTime(e.target.value)}
               required
             />
           </div>

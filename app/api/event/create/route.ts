@@ -19,14 +19,14 @@ export async function POST(req: Request) {
     }
 
     // Checkpoint 3: Validate required fields
-    const requiredFields = ['name', 'description', 'dateTime']
+    const requiredFields = ['name', 'description', 'eventDateTime']
     const missingFields = requiredFields.filter(field => !body[field])
     if (missingFields.length > 0) {
       return new NextResponse(`Missing required fields: ${missingFields.join(', ')}`, { status: 400 })
     }
 
     // Checkpoint 4: Validate date format
-    const eventDate = new Date(body.dateTime)
+    const eventDate = new Date(body.eventDateTime)
     if (isNaN(eventDate.getTime())) {
       return new NextResponse('Invalid date format', { status: 400 })
     }

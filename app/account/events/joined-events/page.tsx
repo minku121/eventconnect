@@ -6,13 +6,14 @@ import { Skeleton } from "@/components/ui/skeleton"
 interface Event {
   id: string;
   name: string;
-  dateTime: Date;
   location: string;
   image: string | null;
   participantCount: number;
   maxParticipants?: number;
   meetingStarted:boolean;
   eventId:string
+  startTime:any
+  status:string
   
   createdBy: {
     id: string;
@@ -71,12 +72,14 @@ export default function JoinedEventsPage() {
               key={event.id}
               id={event.id}
               title={event.name}
-              date={new Date(event.dateTime).toLocaleDateString()}
+              date={new Date(event.startTime).toLocaleDateString()}
               location={event.location}
               imageUrl={event.image || "/placeholder.svg"}
-              seatsLeft={event.maxParticipants ? event.maxParticipants - event.participantCount : 0}
+              seatsLeft={event.maxParticipants ? (event.maxParticipants - event.participantCount).toString() : "unlimited"}
               participants={event.participantCount}
               meetingStarted={event.meetingStarted}
+             
+              status={event.status}
               eventId={event.eventId}           
             />
           ))}

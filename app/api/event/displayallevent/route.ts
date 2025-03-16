@@ -13,6 +13,9 @@ export async function GET(request: Request) {
       prisma.event.findMany({
         skip: (page - 1) * pageSize,
         take: pageSize,
+        where: {
+          status: "SCHEDULED",
+        },
         select: {
           id: true,
           name: true,
@@ -33,10 +36,13 @@ export async function GET(request: Request) {
               email: true
             }
           }
-        },
-       
+        }
       }),
-      prisma.event.count({ where: { ispublic: true } })
+      prisma.event.count({ 
+        where: { 
+          status: "SCHEDULED", 
+        } 
+      })
     ]);
 
     return NextResponse.json({

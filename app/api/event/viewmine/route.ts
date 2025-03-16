@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
         image: true,
         location: true,
         createdAt: true,
+        startTime:true,
         islimited:true,
         maxParticipants: true,
         ispublic: true,
@@ -49,7 +50,7 @@ export async function GET(request: NextRequest) {
 
     const eventsWithISOString = events.map(event => ({
       ...event,
-      dateTime: event.createdAt.toISOString()
+     
     }));
 
     return NextResponse.json(eventsWithISOString);

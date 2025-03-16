@@ -7,13 +7,14 @@ type EventCardProps = {
   date: string
   location: string
   imageUrl: string
-  seatsLeft: number
+  seatsLeft: string
   participants: number
   meetingStarted: boolean
   eventId: string
+  status:string
 }
 
-export default function JoinedEventCard({ id, title, date, location, imageUrl, seatsLeft, participants, meetingStarted, eventId }: EventCardProps) {
+export default function JoinedEventCard({ id, title, date, location, imageUrl, seatsLeft, participants, meetingStarted,status, eventId }: EventCardProps) {
   return (
     <div className="border rounded-lg shadow-md overflow-hidden">
       <div className="relative h-48">
@@ -31,7 +32,7 @@ export default function JoinedEventCard({ id, title, date, location, imageUrl, s
         </div>
         <div className="flex justify-between items-center mb-4">
           <div className="text-sm">
-            <span className="font-semibold">{seatsLeft}</span> seats left
+            <span className="font-semibold">{}</span> seats left
           </div>
           <div className="flex items-center text-sm">
             <UsersIcon className="h-5 w-5 mr-1" />
