@@ -56,10 +56,6 @@ model Event {
   attendees    EventAttendee[]
   certificates Certificate[]
   participantCount Int     @default(0) @map("participant_count")
-  zegoAppId    String?
-  zegoServerSecret String?
-  durationMinutes Int?
-  endedAt DateTime?
   status       EventStatus @default(SCHEDULED)
   @@map("events")
 }
@@ -133,7 +129,6 @@ model Certificate {
 }
 
 model EventAttendee {
-  id        Int      @id @default(autoincrement())
   eventId   String
   event     Event    @relation(fields: [eventId], references: [eventId])
   userId    Int
