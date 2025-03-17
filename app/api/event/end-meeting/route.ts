@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       data: { 
         status: "ENDED",
         meetingId: null,
-        endedAt: new Date(),
+        endTime: new Date(),
         meetingStarted: false
       }
     });
