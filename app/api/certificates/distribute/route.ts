@@ -10,7 +10,7 @@ export async function POST(req: Request) {
       participants.map((userId: any) => 
         prisma.certificate.create({
           data: {
-            eventId: parseInt(eventId),
+            eventId: eventId,
             userId,
             downloadUrl: `/api/certificates/generate?event=${eventId}&user=${userId}`,
             isPaid,
