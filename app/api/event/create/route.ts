@@ -67,8 +67,6 @@ export async function POST(req: Request) {
         eventId,
         meetingStarted: false,
         meetingId: isOnline ? crypto.randomUUID() : null,
-        zegoAppId: process.env.ZEGO_APP_ID,
-        zegoServerSecret: process.env.ZEGO_SERVER_SECRET,
         status: 'SCHEDULED',
       },
     });
