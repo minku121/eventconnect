@@ -23,6 +23,10 @@ interface Event {
     isOnline: boolean
     eventPin:string
     startTime:string
+    createdBy: {
+      id: string
+      name: string
+    }
   }
 
 interface EditEventDialogProps {
@@ -95,7 +99,13 @@ export function EditEventDialog({ event, open, onOpenChange, onSave }: EditEvent
       }
 
       const updatedEvent = await response.json()
-      onSave(updatedEvent)
+      onSave({
+        ...updatedEvent,
+        createdBy: event.createdBy,
+        startTime: updatedEvent.startTime,
+        maxParticipants: updatedEvent.maxParticipants,
+        islimited: updatedEvent.islimited
+      })
       
       toast({
         title: 'Success',

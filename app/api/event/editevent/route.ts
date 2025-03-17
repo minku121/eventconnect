@@ -67,6 +67,14 @@ export async function PUT(request: NextRequest) {
         eventPin: body.ispublic ? null : body.eventPin,
         meetingId: body.isOnline ? (existingEvent.meetingId || crypto.randomUUID()) : null,
       },
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      }
     });
 
     await prisma.activity.create({

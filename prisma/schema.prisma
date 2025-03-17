@@ -18,14 +18,17 @@ model User {
   profilePic    String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  
+  // Relations
   createdEvents Event[]        @relation("EventCreator")
   joinedEvents  Event[]        @relation("EventParticipant")
+  certificates  Certificate[]
+  eventAttendees EventAttendee[]
+  
   eventsCreated Int            @default(0) @map("events_created")
   eventsJoined  Int            @default(0) @map("events_joined")
 
   @@map("users")
-  Event Event[]
-  Certificate Certificate[]
 }
 
 model Event {
@@ -42,7 +45,7 @@ model Event {
   ispublic     Boolean    @default(true)
   islimited    Boolean    @default(false)
   maxParticipants Int?
-  createdBy    User       @relation(fields: [createdById], references: [id])
+  createdBy    User       @relation("EventCreator", fields: [createdById], references: [id])
   createdById  Int
   isOnline     Boolean    @default(false)
   meetingId    String?    @unique
@@ -50,15 +53,15 @@ model Event {
   eventPin     String?    @default("null")
   meetingStarted Boolean @default(false)
   participants User[]     @relation("EventParticipant")
+  attendees    EventAttendee[]
+  certificates Certificate[]
   participantCount Int     @default(0) @map("participant_count")
-  zegoAppId    String?  // Add this
-  zegoServerSecret String?  // Add this
-  durationMinutes Int? // Meeting duration in minutes
-  endedAt DateTime? // When meeting was actually ended
+  zegoAppId    String?
+  zegoServerSecret String?
+  durationMinutes Int?
+  endedAt DateTime?
+  status       EventStatus @default(SCHEDULED)
   @@map("events")
-  User User[] @relation("EventCreator")
-    status      EventStatus @default(SCHEDULED)
-    Certificate Certificate[]
 }
 
 enum EventStatus {
@@ -89,8 +92,8 @@ model Activity {
 
 model EventAnalytics {
   id             Int      @id @default(autoincrement())
-  eventId        Int      @unique
-  event          Event    @relation(fields: [eventId], references: [id])
+  eventId        String   @unique
+  event          Event    @relation(fields: [eventId], references: [eventId])
   totalJoined    Int      @default(0)
   peakParticipants Int    @default(0)
   averageDuration  Float  @default(0)
@@ -119,12 +122,25 @@ enum ActivityType {
 
 model Certificate {
   id          Int      @id @default(autoincrement())
-  eventId     Int
-  event       Event    @relation(fields: [eventId], references: [id])
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [eventId])
   userId      Int
   user        User     @relation(fields: [userId], references: [id])
   downloadUrl String
   isPaid      Boolean  @default(false)
-  price       Decimal? @db.Decimal(10,2) // Add this line
+  price       Decimal? @db.Decimal(10,2)
   createdAt   DateTime @default(now())
+}
+
+model EventAttendee {
+  id        Int      @id @default(autoincrement())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [eventId])
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  joinedAt  DateTime @default(now())
+  leftAt    DateTime?
+  totalDuration Int  @default(0) // Total duration in milliseconds
+
+  @@unique([eventId, userId])
 }

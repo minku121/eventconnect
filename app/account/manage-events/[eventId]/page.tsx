@@ -323,9 +323,11 @@ export default function EventDetailPage({
         event={event}
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
-        //@ts-ignore
-        onSave={(updatedEvent: Event) => {
-          setEvent(updatedEvent)
+        onSave={(updatedEvent: any) => {
+          setEvent((prev: any) => ({ 
+            ...updatedEvent,
+            createdBy: prev.createdBy
+          }));
         }}
       />
 
@@ -457,11 +459,15 @@ export default function EventDetailPage({
         <TabsContent value="attendees">
           <div className="py-4">
             <h3 className="text-lg font-semibold mb-4">Registered Attendees</h3>
-            {event.participants.map((participant: any) => (
-              <Badge variant="outline" key={participant.id} className="inline-block mr-2">
-                {participant.email}
-              </Badge>
-            ))}
+            {event.participants?.length > 0 ? (
+              event.participants.map((participant: any) => (
+                <Badge variant="outline" key={participant.id} className="inline-block mr-2">
+                  {participant.email}
+                </Badge>
+              ))
+            ) : (
+              <p className="text-muted-foreground">No attendees yet</p>
+            )}
           </div>
         </TabsContent>
       </Tabs>
