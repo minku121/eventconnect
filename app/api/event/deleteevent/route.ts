@@ -42,7 +42,7 @@ export async function DELETE(request: NextRequest) {
 
     
     await prisma.eventAnalytics.deleteMany({
-      where: { eventId: existingEvent.id }
+      where: { eventId: existingEvent.eventId }
     });
 
     // Delete the event
