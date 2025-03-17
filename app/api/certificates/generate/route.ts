@@ -10,7 +10,7 @@ export async function GET(req: Request) {
   // Verify certificate exists
   const certificate = await prisma.certificate.findFirst({
     where: {
-      eventId: Number(eventId),
+      eventId: eventId ||"",
       userId: Number(userId)
     }
   });
