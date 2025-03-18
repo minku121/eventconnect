@@ -1,6 +1,21 @@
-"use client";  // Ensure this is at the top to specify client-side rendering
+"use client"; // Ensure this is at the top to specify client-side rendering
 
-import { Grid, List, Bell, BarChart, Settings, LogOut, GroupIcon, Group, Users2, FileX, TicketCheckIcon, File, LucideSettings2 } from "lucide-react";
+import {
+  Grid,
+  List,
+  Bell,
+  BarChart,
+  Settings,
+  LogOut,
+  GroupIcon,
+  Group,
+  Users2,
+  FileX,
+  TicketCheckIcon,
+  File,
+  LucideSettings2,
+  Router,
+} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -16,12 +31,23 @@ import {
 } from "@/components/ui/sidebar";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 const navItems = [
   { icon: Grid, label: "Dashboard", path: "/account/dashboard" },
   { icon: List, label: "Events", path: "/account/events" },
-  { icon: LucideSettings2, label: "Manage Events", path: "/account/manage-events" },
-  { icon: TicketCheckIcon, label: "Joined Events", path: "/account/events/joined-events" },
+  {
+    icon: LucideSettings2,
+    label: "Manage Events",
+    path: "/account/manage-events",
+  },
+  {
+    icon: TicketCheckIcon,
+    label: "Joined Events",
+    path: "/account/events/joined-events",
+  },
   { icon: Bell, label: "Notification", path: "/account/notifications" },
   { icon: BarChart, label: "Report", path: "/account/report" },
   { icon: Settings, label: "Settings", path: "/account/settings" },
@@ -30,64 +56,85 @@ const navItems = [
 export function SidebarComponent() {
   const { data: session } = useSession();
   const [currentPath, setCurrentPath] = useState<string>("");
-    
-  const handleSignout = () =>{
-    signOut();
-  }
+  const router = useRouter();
 
+  const handleSignout = () => {
+    signOut();
+  };
 
   useEffect(() => {
-    
     if (typeof window !== "undefined") {
       setCurrentPath(window.location.pathname);
     }
-  }, []); 
+  }, []);
 
   return (
     <SidebarProvider>
-      <Sidebar className="fixed top-0 left-0 h-full w-[20%] shadow-xl ">
-        <SidebarHeader className="border-b px-7 py-3">
-          <h2 className="text-lg font-semibold">TeamConnect</h2>
+      <Sidebar className="fixed top-0 left-0 h-full w-[250px] shadow-lg border-r border-border/40 bg-background/95 backdrop-blur-sm">
+        <SidebarHeader className="border-b border-border/40 px-6 py-4">
+          <h2 className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+            TeamConnect
+          </h2>
         </SidebarHeader>
 
-        <SidebarContent className="">
+        <SidebarContent className="px-3 py-4">
           <SidebarMenu>
-            {navItems.map((item) => (
-              <SidebarMenuItem key={item.label}>
-                <SidebarMenuButton asChild>
-                  <Button
-                    variant="ghost"
-                    className={`w-[98%] justify-start p-5 mt-2 ${
-                      currentPath === item.path ? "bg-slate-300 dark:bg-gray-600 " : ""
-                    }`}
-                    onClick={() => {
-                      if (typeof window !== "undefined") {
-                        window.location.pathname = item.path;  // Use window.location to navigate
-                      }
-                    }}
-                  >
-                    <item.icon className="mr-2 h-4 w-4" />
-                    {item.label}
-                  </Button>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+            {navItems.map((item) => {
+              const isActive = currentPath === item.path;
+              return (
+                <SidebarMenuItem key={item.label}>
+                  <SidebarMenuButton asChild>
+                    <Link
+                      href={item.path}
+                      className={cn(
+                        "flex items-center w-full justify-start py-2.5 px-3 mb-1 rounded-lg transition-all duration-200",
+                        "hover:bg-accent hover:text-accent-foreground",
+                        isActive
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "text-muted-foreground"
+                      )}
+                    >
+                      <item.icon
+                        className={cn(
+                          "mr-3 h-4.5 w-4.5",
+                          isActive ? "text-primary" : "text-muted-foreground"
+                        )}
+                      />
+                      {item.label}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
           </SidebarMenu>
         </SidebarContent>
 
-        <SidebarFooter className="border-t p-4">
-          <div className="flex items-center">
-            <Avatar className="h-9 w-9">
-              <AvatarImage src={session?.user?.image ?? ''} alt="Profile Image" />
-              <AvatarFallback>{session?.user?.name ? session.user?.name[0] : ''}</AvatarFallback>
+        <SidebarFooter className="border-t border-border/40 p-4 mt-auto">
+          <div className="flex items-center p-2 rounded-lg bg-muted/50">
+            <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+              <AvatarImage
+                src={session?.user?.image ?? ""}
+                alt="Profile Image"
+              />
+              <AvatarFallback className="bg-primary/10 text-primary">
+                {session?.user?.name ? session.user?.name[0] : ""}
+              </AvatarFallback>
             </Avatar>
-            <div className="ml-3 space-y-1">
-              <p className="text-sm font-medium">{session?.user?.name}</p>
-              <p className="text-xs text-muted-foreground">{session?.user?.email}</p>
+            <div className="ml-3 space-y-0.5 overflow-hidden">
+              <p className="text-sm font-medium truncate">
+                {session?.user?.name}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {session?.user?.email}
+              </p>
             </div>
           </div>
-          <Button variant="ghost" className="mt-4 w-full justify-start" onClick={handleSignout}>
-            <LogOut className="mr-2 h-4 w-4"  />
+          <Button
+            variant="outline"
+            className="mt-4 w-full justify-start hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
+            onClick={handleSignout}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
             Logout
           </Button>
         </SidebarFooter>

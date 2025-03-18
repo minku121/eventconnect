@@ -5,7 +5,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { SessionProviderWrapper } from "@/components/extprovider/SessionProviderWrapper";
 import { Toaster } from "@/components/ui/toaster"
 import { Analytics } from "@vercel/analytics/react"
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"; 
+import TopLoader from "@/components/ui/toploader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,7 +43,9 @@ export default function RootLayout({
             {children}
           </ThemeProvider>
         </SessionProviderWrapper>
-        <Toaster />
+        <Toaster /> 
+        <TopLoader />
+       
         <Analytics/>
         <SpeedInsights/>
       </body>
