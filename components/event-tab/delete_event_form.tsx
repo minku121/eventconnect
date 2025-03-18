@@ -20,10 +20,23 @@ interface Event {
   description: string
   image: string
   location: string
-  dateTime: string
+  startTime: string
+  eventDateTime?: string
   islimited: boolean
-  maxmaxParticipantss?: number
+  maxParticipants?: number
   ispublic: boolean
+  isOnline?: boolean
+  meetingId?: string
+  eventId?: string
+  eventPin?: string
+  participantCount?: number
+  meetingStarted?: boolean
+  createdById?: any
+  createdAt?: string
+  createdBy?: {
+    id: string
+    name: string
+  }
 }
 
 interface DeleteEventFormProps {
