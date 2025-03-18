@@ -22,7 +22,7 @@ export default function SettingsPage() {
   const [email, setEmail] = useState<string>(session?.user?.email || "");
   const [newPassword, setNewPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const [isDarkMode, setIsDarkMode] = useState(theme === "dark");
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     if (session?.user) {
@@ -67,11 +67,7 @@ export default function SettingsPage() {
   };
 
   const handleThemeChange = (checked: boolean) => {
-    const newTheme = checked ? "dark" : "light";
-    setTheme(newTheme);
-    setIsDarkMode(checked);
-    localStorage.setItem("theme", newTheme);
-    document.documentElement.setAttribute("data-theme", newTheme);
+    setTheme(checked ? "dark" : "light");
   };
 
   return (

@@ -14,6 +14,9 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    // Add a confirmDeletion flag to the body to confirm deletion of attendees and certificates
+    const confirmDeletion = body.confirmDeletion === true;
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -24,6 +27,10 @@ export async function DELETE(request: NextRequest) {
 
     const existingEvent = await prisma.event.findUnique({
       where: { id: parseInt(body.id) },
+      include: {
+        attendees: { select: { userId: true }, take: 1 },
+        certificates: { select: { id: true }, take: 1 }
+      }
     });
 
     if (!existingEvent) {
@@ -40,6 +47,28 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    const hasAttendees = existingEvent.attendees.length > 0;
+    const hasCertificates = existingEvent.certificates.length > 0;
+
+    // If event has attendees or certificates and deletion isn't explicitly confirmed
+    if ((hasAttendees || hasCertificates) && !confirmDeletion) {
+      return NextResponse.json({
+        requiresConfirmation: true,
+        hasAttendees,
+        hasCertificates,
+        message: "This event has attendees or certificates. Explicit confirmation required to delete."
+      }, { status: 428 }); // 428 Precondition Required
+    }
+    
+    // Delete related attendees first
+    await prisma.eventAttendee.deleteMany({
+      where: { eventId: existingEvent.eventId }
+    });
+    
+    // Delete any certificates associated with the event
+    await prisma.certificate.deleteMany({
+      where: { eventId: existingEvent.eventId }
+    });
     
     await prisma.eventAnalytics.deleteMany({
       where: { eventId: existingEvent.eventId }
@@ -69,4 +98,4 @@ export async function DELETE(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

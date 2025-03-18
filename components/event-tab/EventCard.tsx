@@ -76,7 +76,7 @@ export default function EventCard({ event, onEventUpdate, onEventDelete }: Event
         </div>
       </CardContent>
       <CardFooter className="mt-auto py-4 px-4">
-        <div className="grid grid-cols-2 gap-4 w-full">
+        <div className="grid grid-cols-3 gap-2 w-full">
           <EditEventPopover 
           //@ts-ignore
             event={event}
@@ -87,15 +87,17 @@ export default function EventCard({ event, onEventUpdate, onEventDelete }: Event
               }
             }}
           />
-          {/* <DeleteEventForm 
-            event={event} 
-            onDelete={(deletedEventId) => {
-              if (onEventDelete) {
-                onEventDelete(deletedEventId)
-              }
-            }}
-          /> */}
-       <Button onClick={handleManageEvent}>Manage Event</Button>
+          {session?.user?.id === event.createdById && (
+            <DeleteEventForm 
+              event={event} 
+              onDelete={(deletedEventId) => {
+                if (onEventDelete) {
+                  onEventDelete(deletedEventId)
+                }
+              }}
+            />
+          )}
+          <Button onClick={handleManageEvent}>Manage Event</Button>
         </div>
       </CardFooter>
     </Card>

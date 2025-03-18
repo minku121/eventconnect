@@ -27,7 +27,7 @@ export default function Layout({ children }: LayoutProps) {
       color="#2299DD"
             initialPosition={0.08}
             crawlSpeed={200}
-            height={3}
+            height={1.5}
             crawl={true}
             showSpinner={true}
             easing="ease"

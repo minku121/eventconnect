@@ -108,7 +108,7 @@ export default function EventDetailPage({
     }
   }, [eventId, session, router, toast]);
 
-  const handleDeleteEvent = async () => {
+  const handleDeleteEvent = async (confirmDeletion = false) => {
     if (!event) return;
 
     try {
@@ -117,8 +117,21 @@ export default function EventDetailPage({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id: event.id }),
+        body: JSON.stringify({ 
+          id: event.id,
+          confirmDeletion
+        }),
       });
+
+      const data = await response.json();
+
+      // Handle case where we need confirmation for events with attendees/certificates
+      if (!response.ok && response.status === 428 && data.requiresConfirmation && !confirmDeletion) {
+        setAttendeeWarningOpen(true);
+        setHasAttendees(data.hasAttendees);
+        setHasCertificates(data.hasCertificates);
+        return;
+      }
 
       if (!response.ok) {
         throw new Error("Failed to delete event");
@@ -142,6 +155,10 @@ export default function EventDetailPage({
   const handleStartMeeting = () => {
     router.push(`/account/manage-events/startmeeting/${eventId}`)
   }
+
+  const [attendeeWarningOpen, setAttendeeWarningOpen] = useState(false);
+  const [hasAttendees, setHasAttendees] = useState(false);
+  const [hasCertificates, setHasCertificates] = useState(false);
 
   if (loading) {
     return (
@@ -291,7 +308,7 @@ export default function EventDetailPage({
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction className="bg-destructive text-destructive-foreground" onClick={handleDeleteEvent}>
+                <AlertDialogAction className="bg-destructive text-destructive-foreground" onClick={() => handleDeleteEvent(false)}>
                   Delete
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -330,6 +347,44 @@ export default function EventDetailPage({
           }));
         }}
       />
+
+      {/* Extra warning dialog for events with attendees/certificates */}
+      <AlertDialog open={attendeeWarningOpen} onOpenChange={setAttendeeWarningOpen}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Warning: Data Will Be Lost</AlertDialogTitle>
+            <AlertDialogDescription>
+              <div className="space-y-4">
+                <p>You are about to delete an event that has:</p>
+                <ul className="list-disc pl-5 space-y-2">
+                  {hasAttendees && (
+                    <li className="text-amber-600 font-medium">
+                      Attendance records that will be permanently deleted
+                    </li>
+                  )}
+                  {hasCertificates && (
+                    <li className="text-amber-600 font-medium">
+                      Certificates that will be permanently deleted and no longer accessible to attendees
+                    </li>
+                  )}
+                </ul>
+                <p className="pt-2 font-medium">
+                  This action cannot be undone. Are you sure you want to continue?
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-destructive text-destructive-foreground"
+              onClick={() => handleDeleteEvent(true)}
+            >
+              Delete Permanently
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Title and description */}
       <div className="space-y-4 pt-4">
@@ -474,4 +529,3 @@ export default function EventDetailPage({
     </div>
   )
 }
-

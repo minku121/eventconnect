@@ -10,7 +10,7 @@ export function CTASection() {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="relative">
+      <div className="relative mx-auto max-w-5xl">
       <div className="absolute left-0 top-0 transform w-44 h-44 bg-blue-700 rounded-full blur-[100px] opacity-50"></div>
         <div className="bg-gradient-to-t from-background to-background/60 border rounded-3xl px-8 py-16 text-center">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl mb-4">
@@ -27,4 +27,3 @@ export function CTASection() {
     </motion.section>
   )
 }
-
