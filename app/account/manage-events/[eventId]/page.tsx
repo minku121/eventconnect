@@ -268,9 +268,11 @@ export default function EventDetailPage({
       {/* Action buttons bar - positioned above the image */}
       <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" className="shadow-md">
-            <FileCheck className="mr-2 h-4 w-4" />
-            Manage Certificates
+          <Button variant="outline" className="shadow-md" asChild>
+            <Link href={`/account/manage-events/${eventId}/certificates`}>
+              <FileCheck className="mr-2 h-4 w-4" />
+              Manage Certificates
+            </Link>
           </Button>
           <Button variant="outline" className="shadow-md" onClick={() => setEditDialogOpen(true)}>
             <Edit className="mr-2 h-4 w-4" />
@@ -479,9 +481,11 @@ export default function EventDetailPage({
                   <ArrowUpRight className="mr-2 h-4 w-4" />
                   View Public Page
                 </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <FileCheck className="mr-2 h-4 w-4" />
-                  Certificate Templates
+                <Button variant="outline" size="sm" className="w-full justify-start" asChild>
+                  <Link href={`/account/manage-events/${eventId}/certificates`}>
+                    <FileCheck className="mr-2 h-4 w-4" />
+                    Certificate Templates
+                  </Link>
                 </Button>
                 <Button variant="outline" size="sm" className="w-full justify-start">
                   <BarChart4 className="mr-2 h-4 w-4" />

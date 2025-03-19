@@ -34,10 +34,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import NotificationBell from "@/components/NotificationBell";
 
 const navItems = [
   { icon: Grid, label: "Dashboard", path: "/account/dashboard" },
-  { icon: List, label: "Events", path: "/account/events" },
+  { icon: File, label: "Events", path: "/account/events" },
   {
     icon: LucideSettings2,
     label: "Manage Events",
@@ -51,6 +52,7 @@ const navItems = [
   { icon: Bell, label: "Notification", path: "/account/notifications" },
   { icon: BarChart, label: "Report", path: "/account/report" },
   { icon: Settings, label: "Settings", path: "/account/settings" },
+  { icon: FileX, label: "Certificates", path: "/account/certificates" },
 ];
 
 export function SidebarComponent() {
@@ -78,6 +80,11 @@ export function SidebarComponent() {
         </SidebarHeader>
 
         <SidebarContent className="px-3 py-4">
+          <div className="flex justify-between items-center px-3 mb-4">
+            <h3 className="text-sm font-medium">Menu</h3>
+            <NotificationBell />
+          </div>
+
           <SidebarMenu>
             {navItems.map((item) => {
               const isActive = currentPath === item.path;

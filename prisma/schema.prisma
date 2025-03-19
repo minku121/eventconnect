@@ -57,6 +57,7 @@ model Event {
   certificates Certificate[]
   participantCount Int     @default(0) @map("participant_count")
   status       EventStatus @default(SCHEDULED)
+  certificateTemplateId Int? @map("certificate_template_id")
   @@map("events")
 }
 
