@@ -3,9 +3,11 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/lib/auth"
 import prisma from "@/app/lib/prisma"
 
+type Params = { params: { eventId: string } }
+
 export async function GET(
   request: NextRequest,
-  context: { params: { eventId: string } }
+  { params }: Params
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -13,9 +15,8 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Get and await the params
-    const params = await context.params
-    const eventId = params.eventId
+    // Get the eventId from params
+    const { eventId } = params
 
     if (!eventId) {
       return NextResponse.json({ error: "Event ID is required" }, { status: 400 })
@@ -23,7 +24,7 @@ export async function GET(
 
     // Verify the event exists
     const event = await prisma.event.findUnique({
-      where: { eventId},
+      where: { eventId: eventId },
       include: {
         createdBy: {
           select: {
