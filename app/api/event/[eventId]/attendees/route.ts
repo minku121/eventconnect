@@ -3,10 +3,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth";
 import prisma from "@/app/lib/prisma";
 
-// Next.js 15 route handler pattern
+// Try direct export with type any for the context parameter
 export async function GET(
   request: NextRequest,
-  { params }: { params: { eventId: string } }
+  context: any
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,7 +15,7 @@ export async function GET(
     }
     
     // Get the eventId from params
-    const { eventId } = params;
+    const eventId = context.params.eventId;
     
     if (!eventId) {
       return NextResponse.json({ error: "Event ID is required" }, { status: 400 });
