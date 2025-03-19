@@ -3,23 +3,24 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth";
 import prisma from "@/app/lib/prisma";
 
+// Next.js 15 route handler pattern
 export async function GET(
   request: NextRequest,
-  context: { params: { eventId: string } }
+  { params }: { params: { eventId: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
+    
     // Get the eventId from params
-    const { eventId } = context.params;
-
+    const { eventId } = params;
+    
     if (!eventId) {
       return NextResponse.json({ error: "Event ID is required" }, { status: 400 });
     }
-
+    
     // Verify the event exists
     const event = await prisma.event.findUnique({
       where: { eventId: eventId },
@@ -31,11 +32,11 @@ export async function GET(
         },
       },
     });
-
+    
     if (!event) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
-
+    
     // Verify the requesting user is the event creator
     if (event.createdBy.id !== session.user.id) {
       return NextResponse.json(
@@ -43,7 +44,7 @@ export async function GET(
         { status: 403 }
       );
     }
-
+    
     // Get all attendees for this event
     const attendeeRegistrations = await prisma.eventAttendee.findMany({
       where: { eventId: eventId },
@@ -57,7 +58,7 @@ export async function GET(
         },
       },
     });
-
+    
     // Also get certificates to match with attendees
     const certificates = await prisma.certificate.findMany({
       where: { eventId: eventId },
@@ -67,13 +68,13 @@ export async function GET(
         createdAt: true,
       },
     });
-
+    
     // Format the attendees data
     const attendees = attendeeRegistrations.map((registration) => {
       const certificate = certificates.find(
         (cert) => cert.userId === registration.userId
       );
-
+      
       return {
         id: registration.user.id,
         name: registration.user.name,
@@ -83,7 +84,7 @@ export async function GET(
         certificateIssueDate: certificate?.createdAt,
       };
     });
-
+    
     return NextResponse.json({ attendees });
   } catch (error) {
     console.error(
