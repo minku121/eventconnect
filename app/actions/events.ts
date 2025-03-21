@@ -10,8 +10,9 @@ export const getEventById = async (eventId: string, userId: number) => {
         id: true,
         name: true,
         participants: true,
-        meetingStarted:true,
+        meetingStarted: true,
         meetingId: true,
+        status: true,
         createdBy: {
           select: {
             id: true,
@@ -32,4 +33,3 @@ export const getEventById = async (eventId: string, userId: number) => {
     throw new Error('Failed to fetch event details');
   }
 };
-

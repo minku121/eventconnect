@@ -2,6 +2,7 @@
 import JoinedEventCard from "@/components/joined-tab/JoinedEventCard"
 import { useEffect, useState } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface Event {
   id: string;
@@ -10,10 +11,10 @@ interface Event {
   image: string | null;
   participantCount: number;
   maxParticipants?: number;
-  meetingStarted:boolean;
-  eventId:string
-  startTime:any
-  status:string
+  meetingStarted: boolean;
+  eventId: string;
+  startTime: any;
+  status: string;
   
   createdBy: {
     id: string;
@@ -62,35 +63,129 @@ export default function JoinedEventsPage() {
     );
   }
 
+  // Filter events by status
+  const activeEvents = events.filter(event => event.status === "ACTIVE");
+  const scheduledEvents = events.filter(event => event.status === "SCHEDULED");
+  const endedEvents = events.filter(event => event.status === "ENDED");
+
   return (
     <div className="min-h-screen py-8">
       <div className="container mx-auto px-4">
         <h1 className="text-3xl font-bold mb-8 text-center">Joined Events</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {events.map((event) => (
-            <JoinedEventCard
-              key={event.id}
-              id={event.id}
-              title={event.name}
-              date={new Date(event.startTime).toLocaleDateString()}
-              location={event.location}
-              imageUrl={event.image || "/placeholder.svg"}
-              seatsLeft={event.maxParticipants ? (event.maxParticipants - event.participantCount).toString() : "unlimited"}
-              participants={event.participantCount}
-              meetingStarted={event.meetingStarted}
-             
-              status={event.status}
-              eventId={event.eventId}           
-            />
-          ))}
-        </div>
-        {events.length === 0 && !loading && (
-          <div className="text-center text-gray-500 mt-8">
-            You haven't joined any events yet.
-          </div>
-        )}
+        
+        <Tabs defaultValue="all" className="w-full mb-8">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="all">All ({events.length})</TabsTrigger>
+            <TabsTrigger value="active">Active ({activeEvents.length})</TabsTrigger>
+            <TabsTrigger value="scheduled">Scheduled ({scheduledEvents.length})</TabsTrigger>
+            <TabsTrigger value="ended">Ended ({endedEvents.length})</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="all">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {events.length > 0 ? (
+                events.map((event) => (
+                  <JoinedEventCard
+                    key={event.id}
+                    id={event.id}
+                    title={event.name}
+                    date={new Date(event.startTime).toLocaleDateString()}
+                    location={event.location}
+                    imageUrl={event.image || "/placeholder.svg"}
+                    seatsLeft={event.maxParticipants ? (event.maxParticipants - event.participantCount).toString() : "unlimited"}
+                    participants={event.participantCount}
+                    meetingStarted={event.meetingStarted}
+                    status={event.status}
+                    eventId={event.eventId}           
+                  />
+                ))
+              ) : (
+                <div className="col-span-3 text-center text-gray-500 py-10">
+                  You haven't joined any events yet.
+                </div>
+              )}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="active">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {activeEvents.length > 0 ? (
+                activeEvents.map((event) => (
+                  <JoinedEventCard
+                    key={event.id}
+                    id={event.id}
+                    title={event.name}
+                    date={new Date(event.startTime).toLocaleDateString()}
+                    location={event.location}
+                    imageUrl={event.image || "/placeholder.svg"}
+                    seatsLeft={event.maxParticipants ? (event.maxParticipants - event.participantCount).toString() : "unlimited"}
+                    participants={event.participantCount}
+                    meetingStarted={event.meetingStarted}
+                    status={event.status}
+                    eventId={event.eventId}           
+                  />
+                ))
+              ) : (
+                <div className="col-span-3 text-center text-gray-500 py-10">
+                  No active events at the moment.
+                </div>
+              )}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="scheduled">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {scheduledEvents.length > 0 ? (
+                scheduledEvents.map((event) => (
+                  <JoinedEventCard
+                    key={event.id}
+                    id={event.id}
+                    title={event.name}
+                    date={new Date(event.startTime).toLocaleDateString()}
+                    location={event.location}
+                    imageUrl={event.image || "/placeholder.svg"}
+                    seatsLeft={event.maxParticipants ? (event.maxParticipants - event.participantCount).toString() : "unlimited"}
+                    participants={event.participantCount}
+                    meetingStarted={event.meetingStarted}
+                    status={event.status}
+                    eventId={event.eventId}           
+                  />
+                ))
+              ) : (
+                <div className="col-span-3 text-center text-gray-500 py-10">
+                  No scheduled events at the moment.
+                </div>
+              )}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="ended">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {endedEvents.length > 0 ? (
+                endedEvents.map((event) => (
+                  <JoinedEventCard
+                    key={event.id}
+                    id={event.id}
+                    title={event.name}
+                    date={new Date(event.startTime).toLocaleDateString()}
+                    location={event.location}
+                    imageUrl={event.image || "/placeholder.svg"}
+                    seatsLeft={event.maxParticipants ? (event.maxParticipants - event.participantCount).toString() : "unlimited"}
+                    participants={event.participantCount}
+                    meetingStarted={event.meetingStarted}
+                    status={event.status}
+                    eventId={event.eventId}           
+                  />
+                ))
+              ) : (
+                <div className="col-span-3 text-center text-gray-500 py-10">
+                  No ended events yet.
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
 }
-

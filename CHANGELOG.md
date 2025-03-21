@@ -32,6 +32,19 @@
 - Added detailed logging for debugging purposes
 - Implemented a simplified token generation function for development
 
+## Meeting Management Improvements (March 21, 2025)
+
+### Changed
+- Renamed the video call feature from `/video-call` to `/join-meeting` for better clarity
+- Enhanced meeting end behavior:
+  - When admin ends a meeting, joined users are automatically removed from the call
+  - Leave endpoint is automatically called when a meeting ends
+  - Users are redirected to `/account/joined-events` after a meeting ends
+  - Improved status check handling in the meeting UI
+
+### Fixed
+- Fixed dynamic route parameter handling in the event status API endpoint
+
 ## [Unreleased]
 
 ### Added

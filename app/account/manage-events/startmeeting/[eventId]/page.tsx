@@ -98,7 +98,7 @@ const Room = () => {
         sharedLinks: [
           {
             name: "Personal link",
-            url: `${window.location.origin}${'/video-call'}?roomID=${meetingId}`,
+            url: `${window.location.origin}${'/join-meeting'}?roomID=${eventId}`,
           },
         ],
         scenario: { 

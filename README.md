@@ -20,7 +20,7 @@ EventConnect is a modern, full-stack web application for creating, managing, and
 - **API Routes** (`/app/api`): RESTful endpoints for events, authentication, certificates, and ZegoCloud integration
 - **Authentication** (`/app/auth`): NextAuth.js implementation for secure user authentication
 - **Account Management** (`/app/account`): User dashboard, event management, notifications, and settings
-- **Video Conferencing** (`/app/video-call`): ZegoCloud integration for real-time video meetings
+- **Video Conferencing** (`/app/join-meeting`): ZegoCloud integration for real-time video meetings
 - **Cron Jobs** (`/app/cron`): Scheduled tasks for event reminders and cleanup
 
 ### Components (`/components`)

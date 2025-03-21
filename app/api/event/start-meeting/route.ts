@@ -23,7 +23,12 @@ export async function POST(request: NextRequest) {
 
     await prisma.event.update({
       where: { eventId: body.eventId },
-      data: { meetingStarted: true }
+      data: { 
+        meetingStarted: true, 
+        status: "ACTIVE"
+
+      }
+
     });
 
     return NextResponse.json({ success: true });
