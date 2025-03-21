@@ -80,7 +80,7 @@ const JoinMeetingPage = () => {
     
     if (success && data?.status === "ENDED") {
       console.log("Meeting ended by admin. Handling user exit...");
-      await handleLeaveMeeting('/account/joined-events');
+      await handleLeaveMeeting('/account/events/joined-events');
     }
     
     return { success, data };
@@ -104,7 +104,7 @@ const JoinMeetingPage = () => {
           // Only allow joining if meeting is active
           if (statusCheck.data?.status !== "ACTIVE") {
             setErrorMessage(`This meeting is not active. Current status: ${statusCheck.data?.status}`);
-            setTimeout(() => router.push('/account/joined-events'), 2000);
+            setTimeout(() => router.push('/account/events/joined-events'), 2000);
             return;
           }
         }
@@ -115,7 +115,7 @@ const JoinMeetingPage = () => {
         // Event validation
         if (event.status === "ENDED") {
           setErrorMessage(`This meeting has already ended. Status: ${event.status}`);
-          setTimeout(() => router.push('/account/joined-events'), 2000);
+          setTimeout(() => router.push('/account/events/joined-events'), 2000);
           return;
         }
 
@@ -125,7 +125,7 @@ const JoinMeetingPage = () => {
 
         if (!isParticipant) {
           setErrorMessage("You are not authorized to attend this meeting");
-          setTimeout(() => router.push("/account/joined-events"), 2000);
+          setTimeout(() => router.push("/account/events/joined-events"), 2000);
           return;
         }
 
@@ -187,7 +187,7 @@ const JoinMeetingPage = () => {
           },
           onLeaveRoom: () => {
             if (!isLeaving) {
-              handleLeaveMeeting('/account/joined-events');
+              handleLeaveMeeting('/account/events/joined-events');
             }
           }
         });
