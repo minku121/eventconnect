@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { SidebarComponent } from "@/components/inner/sidebar-content";
 import SparklesText from "@/components/ui/sparkles-text";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -32,7 +31,7 @@ interface Event {
 }
 
 export default function Page() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [loading, setLoading] = useState<boolean>(true);
   const [events, setEvents] = useState<Event[]>([]);
   const [page, setPage] = useState(1);
@@ -44,17 +43,6 @@ export default function Page() {
   const [joiningEventId, setJoiningEventId] = useState<string | null>(null);
 
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (status === "loading") {
-      setLoading(true);
-    } else {
-      setLoading(false);
-      if (!session) {
-        signIn(); 
-      }
-    }
-  }, [session, status]);
 
   const fetchEvents = useCallback(async (pageNumber: number, retry = retryCount): Promise<void> => {
     try {
@@ -298,21 +286,21 @@ export default function Page() {
                 ))}
             </div>
             
-            <div className="flex relative justify-center gap-4 mt-8 mb-2  bottom-4  py-4">
+            <div className="flex relative justify-center gap-4 mt-8 mb-2 bottom-4 py-4">
               <Button 
                 onClick={handlePreviousPage} 
                 disabled={page === 1}
-                className="disabled:opacity-50"
+                className="disabled:opacity-50 px-6 py-3 touch-manipulation"
               >
                 Previous
               </Button>
-              <span className="flex items-center">
+              <span className="flex items-center px-4">
                 Page {page} of {totalPages}
               </span>
               <Button 
                 onClick={handleNextPage} 
                 disabled={page === totalPages}
-                className="disabled:opacity-50"
+                className="disabled:opacity-50 px-6 py-3 touch-manipulation"
               >
                 Next
               </Button>
