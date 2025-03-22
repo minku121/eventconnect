@@ -3,23 +3,23 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth";
 import prisma from "@/app/lib/prisma";
 
-// Try direct export with type any for the context parameter
+
 export async function GET(
   request: NextRequest,
-  context: any
+  { params }: { params: Promise<{ eventId: string }> }
 ) {
   try {
+    const { eventId } = await params;
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    
-    // Get the eventId from params
-    const eventId = context.params.eventId;
-    
+
     if (!eventId) {
       return NextResponse.json({ error: "Event ID is required" }, { status: 400 });
     }
+
+   
     
     // Verify the event exists
     const event = await prisma.event.findUnique({

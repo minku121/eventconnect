@@ -14,7 +14,10 @@ import {
   Send,
   FileCheck,
   Users,
-  RefreshCw
+  RefreshCw,
+  Clock,
+  Check,
+  Filter
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
@@ -35,6 +38,15 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Progress } from "@/components/ui/progress"
+import { Slider } from "@/components/ui/slider"
+import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface Attendee {
   id: number;
@@ -43,6 +55,7 @@ interface Attendee {
   hasCertificate: boolean;
   certificateId?: number;
   certificateIssueDate?: string;
+  totalDuration?: number; // Duration in milliseconds
 }
 
 interface Certificate {
@@ -99,6 +112,8 @@ export default function CertificatesPage({
   const [attendees, setAttendees] = useState<Attendee[]>([])
   const [selectedAttendees, setSelectedAttendees] = useState<number[]>([])
   const [sendProgress, setSendProgress] = useState<number>(0)
+  const [minAttendanceDuration, setMinAttendanceDuration] = useState<number>(0)
+  const [maxAttendanceDuration, setMaxAttendanceDuration] = useState<number>(100)
 
   // Unwrap the params promise
   const { eventId } = use(params)
@@ -188,6 +203,7 @@ export default function CertificatesPage({
           hasCertificate: Boolean(certificate),
           certificateId: certificate?.id,
           certificateIssueDate: certificate?.createdAt,
+          totalDuration: attendee.totalDuration,
         };
       });
       
@@ -340,6 +356,14 @@ export default function CertificatesPage({
     }
   };
 
+  const handleFilterByAttendanceDuration = () => {
+    const filteredAttendees = attendees.filter(attendee => 
+      (attendee.totalDuration || 0) >= minAttendanceDuration && 
+      (attendee.totalDuration || 0)  <= maxAttendanceDuration
+    )
+    setSelectedAttendees(filteredAttendees.map(attendee => attendee.id))
+  }
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-US', {
@@ -424,9 +448,10 @@ export default function CertificatesPage({
         </div>
 
         <Tabs defaultValue="templates" className="w-full">
-          <TabsList className="grid grid-cols-2 w-[400px]">
+          <TabsList className="grid grid-cols-3 w-[600px]">
             <TabsTrigger value="templates">Certificate Templates</TabsTrigger>
             <TabsTrigger value="issued">Issued Certificates</TabsTrigger>
+            <TabsTrigger value="attendance">Attendance Based Certificates</TabsTrigger>
           </TabsList>
           
           <TabsContent value="templates" className="mt-6 space-y-6">
@@ -587,6 +612,229 @@ export default function CertificatesPage({
                 <Button variant="outline" onClick={() => (document.querySelector('[value="templates"]') as HTMLElement)?.click()}>
                   Select Template
                 </Button>
+              </Card>
+            )}
+          </TabsContent>
+          <TabsContent value="attendance" className="mt-6 space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Attendance Based Certificates</h2>
+              <div className="space-x-2">
+                <Button 
+                  onClick={() => handleSendCertificates(false)}
+                  disabled={event.status !== "ENDED" || sendingCertificates || selectedAttendees.length === 0 || !selectedTemplate}
+                  variant="outline"
+                >
+                  {sendingCertificates ? (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="mr-2 h-4 w-4" />
+                      Send Certificates ({selectedAttendees.length})
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+            
+            {!selectedTemplate && (
+              <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-4">
+                <p className="text-amber-800">
+                  <strong>Note:</strong> Please select a certificate template in the "Certificate Templates" tab before sending certificates.
+                </p>
+              </div>
+            )}
+            
+            {event.status !== "ENDED" && (
+              <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-4">
+                <p className="text-amber-800">
+                  <strong>Note:</strong> Certificates can only be sent after the event has ended.
+                </p>
+              </div>
+            )}
+            
+            <Card className="p-6">
+              <h3 className="text-lg font-medium mb-4">Duration Filter</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center space-x-4">
+                    <label className="w-48">Minimum Attendance:</label>
+                    <Input
+                      type="number"
+                      value={minAttendanceDuration}
+                      onChange={(e) => setMinAttendanceDuration(parseInt(e.target.value) || 0)}
+                      placeholder="Min duration (minutes)"
+                      className="w-48"
+                    />
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <label className="w-48">Maximum Attendance:</label>
+                    <Input
+                      type="number"
+                      value={maxAttendanceDuration}
+                      onChange={(e) => setMaxAttendanceDuration(parseInt(e.target.value) || 0)}
+                      placeholder="Max duration (minutes)"
+                      className="w-48"
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col space-y-4">
+                  <h4 className="font-medium">Quick Filters</h4>
+                  <div className="flex flex-wrap gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => { 
+                        setMinAttendanceDuration(10); 
+                        setMaxAttendanceDuration(1000);
+                        handleFilterByAttendanceDuration();
+                      }}
+                    >
+                      <Clock className="mr-1 h-3 w-3" />
+                      More than 10 minutes
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => { 
+                        setMinAttendanceDuration(30); 
+                        setMaxAttendanceDuration(1000);
+                        handleFilterByAttendanceDuration();
+                      }}
+                    >
+                      <Clock className="mr-1 h-3 w-3" />
+                      More than 30 minutes
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => { 
+                        setMinAttendanceDuration(60); 
+                        setMaxAttendanceDuration(1000);
+                        handleFilterByAttendanceDuration();
+                      }}
+                    >
+                      <Clock className="mr-1 h-3 w-3" />
+                      More than 1 hour
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              <Button onClick={handleFilterByAttendanceDuration} className="w-full">
+                <Filter className="mr-2 h-4 w-4" />
+                Apply Filter
+              </Button>
+            </Card>
+
+            {loadingCertificates ? (
+              <div className="grid grid-cols-1 gap-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-20 bg-muted rounded animate-pulse"></div>
+                ))}
+              </div>
+            ) : attendees.length > 0 ? (
+              <Card>
+                <div className="p-4 flex justify-between items-center border-b">
+                  <h3 className="font-medium">Filtered Attendees</h3>
+                  <div className="text-sm text-muted-foreground">
+                    Showing {attendees.filter(attendee => 
+                      ((attendee.totalDuration || 0) / 60000) >= minAttendanceDuration && 
+                      ((attendee.totalDuration || 0) / 60000) <= maxAttendanceDuration
+                    ).length} of {attendees.length} attendees
+                  </div>
+                </div>
+                <ScrollArea className="h-80">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12">
+                          <Checkbox 
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                const eligibleAttendees = attendees.filter(a => 
+                                  ((a.totalDuration || 0) / 60000) >= minAttendanceDuration && 
+                                  ((a.totalDuration || 0) / 60000) <= maxAttendanceDuration && 
+                                  !a.hasCertificate
+                                );
+                                setSelectedAttendees(eligibleAttendees.map(a => a.id));
+                              } else {
+                                setSelectedAttendees([]);
+                              }
+                            }}
+                            checked={
+                              selectedAttendees.length > 0 && 
+                              selectedAttendees.length === attendees.filter(a => 
+                                ((a.totalDuration || 0) / 60000) >= minAttendanceDuration && 
+                                ((a.totalDuration || 0) / 60000) <= maxAttendanceDuration && 
+                                !a.hasCertificate
+                              ).length
+                            }
+                          />
+                        </TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Attendance Duration</TableHead>
+                        <TableHead>Certificate Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {attendees
+                        .filter(attendee => 
+                          ((attendee.totalDuration || 0) / 60000) >= minAttendanceDuration && 
+                          ((attendee.totalDuration || 0) / 60000) <= maxAttendanceDuration
+                        )
+                        .map((attendee) => (
+                          <TableRow key={attendee.id}>
+                            <TableCell>
+                              <Checkbox 
+                                onCheckedChange={(checked) => 
+                                  handleSelectAttendee(attendee.id, checked === true)
+                                }
+                                checked={selectedAttendees.includes(attendee.id)}
+                                disabled={attendee.hasCertificate}
+                              />
+                            </TableCell>
+                            <TableCell>{attendee.name}</TableCell>
+                            <TableCell>{attendee.email}</TableCell>
+                            <TableCell>
+                              {((attendee.totalDuration || 0) / 60000) || 0} minutes
+                            </TableCell>
+                            <TableCell>
+                              {attendee.hasCertificate ? (
+                                <div className="flex items-center">
+                                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 mr-2">
+                                    <Check className="mr-1 h-3 w-3" /> Issued
+                                  </Badge>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    onClick={() => handleDownloadCertificate(attendee.id)}
+                                  >
+                                    <Download className="h-4 w-4 mr-1" />
+                                    Download
+                                  </Button>
+                                </div>
+                              ) : (
+                                <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                                  Not Issued
+                                </Badge>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              </Card>
+            ) : (
+              <Card className="p-8 flex flex-col items-center justify-center text-center">
+                <FileCheck className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-xl font-medium mb-2">No Attendees Found</h3>
+                <p className="text-muted-foreground mb-6 max-w-md">
+                  Please adjust the attendance duration filters to find attendees.
+                </p>
               </Card>
             )}
           </TabsContent>

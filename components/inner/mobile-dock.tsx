@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { Dock, DockIcon } from "@/components/ui/dock";
 import { useSession } from "next-auth/react";
 import { signOut } from "next-auth/react";
+import NotificationBell from "@/components/NotificationBell";
 
 
 
@@ -35,8 +36,7 @@ const DATA = {
     { href: "/account/events", icon: CalendarIcon, label: "Events" },
     { href: "/account/manage-events", icon: LucideSettings2, label: "Manage Events" },
     { href: "/account/events/joined-events", icon: TicketCheckIcon, label: "Joined Events" },
-    { href: "/account/notifications", icon: Bell, label: "Notifications" },
-    { href: "/account/report", icon: ChartBar, label: "Report" },
+    { href: "/account/notifications", icon: "notification", label: "Notifications" },
     { href: "/account/settings", icon: Settings, label: "Setting" },
   ],
 };
@@ -56,24 +56,46 @@ export function MobileDock() {
     <div className="fixed bottom-5 flex h-auto w-[100%] flex-col items-center justify-center overflow-y-auto overflow-x-hidden rounded-lg md:shadow-xl">
       <TooltipProvider>
         <Dock direction="middle" iconDistance={45} iconSize={30} iconMagnification={65}>
-          {DATA.navbar.map((item) => (
-            <DockIcon key={item.label}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    href={item.href}
-                    aria-label={item.label}
-                    className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "size-12 rounded-full")}
-                  >
-                    <item.icon className="size-4" />
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{item.label}</p>
-                </TooltipContent>
-              </Tooltip>
-            </DockIcon>
-          ))}
+          {DATA.navbar.map((item) => {
+            if (item.icon === "notification") {
+              return (
+                <DockIcon key={item.label}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Link
+                        href={item.href}
+                        aria-label={item.label}
+                      >
+                        <NotificationBell />
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{item.label}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </DockIcon>
+              );
+            }
+            
+            return (
+              <DockIcon key={item.label}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href={item.href}
+                      aria-label={item.label}
+                      className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "size-12 rounded-full")}
+                    >
+                      <item.icon className="size-4" />
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{item.label}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </DockIcon>
+            );
+          })}
 
           <Separator orientation="vertical" className="h-full py-2" />
 

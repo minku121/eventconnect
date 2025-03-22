@@ -4,266 +4,240 @@ import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { getEventById } from "@/app/actions/events";
-import { Loader2 } from "lucide-react";
 
-const JoinMeetingPage = () => {
+export default function JoinMeeting() {
   const { eventId } = useParams();
-  const { data: session } = useSession();
-  const userId = session?.user?.id ? Number(session.user.id) : null;
+  const { data: session, status } = useSession();
   const router = useRouter();
-  const meetingRef = useRef<HTMLDivElement>(null);
-  const attendanceRecorded = useRef(false);
-  const zegoInstanceRef = useRef<any>(null);
-  
+  const myMeeting = useRef<HTMLDivElement>(null);
+  const [isSessionReady, setIsSessionReady] = useState(false);
+  const [eventData, setEventData] = useState<any>(null);
+  const [showLeaveDialog, setShowLeaveDialog] = useState<boolean>(false);
+  const zpRef = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLeaving, setIsLeaving] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isRecordingAttendance, setIsRecordingAttendance] = useState(false);
+  const [isLeavingMeeting, setIsLeavingMeeting] = useState(false);
+  const statusIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-
-  const callEventApi = async (endpoint: string, message: string) => {
-    try {
-      console.log(`${message} for event: ${eventId}`);
-      const response = await fetch(`/api/event/${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventId })
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error(`${message} failed:`, errorData);
-        return { success: false, data: errorData };
-      }
-      
-      const data = await response.json().catch(() => ({}));
-      console.log(`${message} completed:`, data);
-      return { success: true, data };
-    } catch (error) {
-      console.error(`${message} error:`, error);
-      return { success: false, error };
-    }
-  };
-
-  // Unified leave meeting function that handles both manual and automatic leaves
-  const handleLeaveMeeting = async (redirectPath = '/account/events') => {
-    if (isLeaving) return; // Prevent duplicate leave calls
-    
-    setIsLeaving(true);
-    
-    try {
-      // Ensure Zego instance leaves room
-      if (zegoInstanceRef.current) {
-        zegoInstanceRef.current.leaveRoom();
-      }
-      
-      // Record the leave in the backend
-      const result = await callEventApi('leave-event', 'Recording leave');
-      
-      // Only redirect after we get a response from the leave-event API
-      if (result.success) {
-        console.log("Leave event recorded successfully, redirecting...");
-      } else {
-        console.error("Failed to record leave event, redirecting anyway...");
-      }
-    } catch (error) {
-      console.error('Error during leave process:', error);
-    } finally {
-      setIsLeaving(false);
-      router.push(redirectPath);
-    }
-  };
-
-  // Improved event status checker
-  const checkEventStatus = async () => {
-    const { success, data } = await callEventApi(`${eventId}/status`, 'Checking event status');
-    
-    if (success && data?.status === "ENDED") {
-      console.log("Meeting ended by admin. Handling user exit...");
-      await handleLeaveMeeting('/account/events/joined-events');
-    }
-    
-    return { success, data };
-  };
-
-  // Setup the meeting
   useEffect(() => {
-    const setupMeeting = async () => {
-      setIsLoading(true);
-      setErrorMessage(null);
-      
+    if (status === "authenticated") {
+      setIsSessionReady(true);
+    } else if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  // Status polling effect
+  useEffect(() => {
+    return () => {
+      if (statusIntervalRef.current) {
+        clearInterval(statusIntervalRef.current);
+      }
+    };
+  }, []);
+
+  const startStatusPolling = () => {
+    // Clear any existing interval
+    if (statusIntervalRef.current) {
+      clearInterval(statusIntervalRef.current);
+    }
+
+    // Set up new polling interval
+    statusIntervalRef.current = setInterval(async () => {
       try {
-        if (!eventId || !userId) {
-          throw new Error("Missing required information: Event ID or user ID");
+        const response = await fetch(`/api/event/${eventId}/status`);
+        if (!response.ok) {
+          throw new Error('Status check failed');
         }
-        
-        // First check the event status before joining
-        const statusCheck = await checkEventStatus();
-        
-        if (statusCheck.success) {
-          // Only allow joining if meeting is active
-          if (statusCheck.data?.status !== "ACTIVE") {
-            setErrorMessage(`This meeting is not active. Current status: ${statusCheck.data?.status}`);
-            setTimeout(() => router.push('/account/events/joined-events'), 2000);
-            return;
-          }
+        const data = await response.json();
+        if(data.status === "ENDED"){
+          alert("The meeting might have ended.");
+          handleLeaveRoom();
         }
+      } catch (error) {
+        console.error("Failed to get meeting status:", error);
+        alert("Failed to get meeting status. The meeting might have ended.");
+      }
+    }, 10000);
+  };
 
-        // Get event details
-        const event = await getEventById(eventId as string, userId);
-        
-        // Event validation
-        if (event.status === "ENDED") {
-          setErrorMessage(`This meeting has already ended. Status: ${event.status}`);
-          setTimeout(() => router.push('/account/events/joined-events'), 2000);
-          return;
-        }
+  useEffect(() => {
+    if (!isSessionReady) return;
 
-        const isParticipant = event.participants?.some(
-          (user: any) => user.id === session?.user?.id
-        );
-
-        if (!isParticipant) {
-          setErrorMessage("You are not authorized to attend this meeting");
-          setTimeout(() => router.push("/account/events/joined-events"), 2000);
-          return;
-        }
-
-        // ZEGO setup
+    const joinMeeting = async () => {
+      try {
         const appID = Number(process.env.NEXT_PUBLIC_ZEGO_APP_ID);
         const serverSecret = process.env.NEXT_PUBLIC_ZEGO_SERVER_SECRET || "";
-        const meetingId = event.meetingId || `event-${eventId}`;
-        const userName = session?.user?.name || "Participant";
+
+        if (!appID || !serverSecret) {
+          console.error("Missing ZegoCloud credentials");
+          alert("Video conferencing service is not properly configured.");
+          router.push('/account/events');
+          return;
+        }
+
+        const event = await getEventById(eventId as string, Number(session?.user.id));
+
+        setEventData(event);
         
+        // Check if the response is an error object
+        if ('error' in event) {
+          alert(event.error || "Failed to get meeting information");
+          router.push('/account/events');
+          return;
+        }
+        
+        
+        if (!event.meetingId || !event.meetingStarted || event.status!=="ACTIVE") {
+          alert("Meeting not found or not started yet");
+          router.push('/account/events');
+          return;
+        }
+
+        const meetingId = event.meetingId as string;
+        
+      
         const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
           appID,
           serverSecret,
           meetingId,
           Date.now().toString(),
-          userName
+          session?.user?.name || "Participant"
         );
 
         const zp = ZegoUIKitPrebuilt.create(kitToken);
-        zegoInstanceRef.current = zp;
+        zpRef.current = zp;
         
-        // Record attendance once with retry logic
-        const recordAttendance = async () => {
-          if (!attendanceRecorded.current) {
-            console.log("Recording attendance for the meeting...");
-            
-            // First attempt
-            let { success } = await callEventApi('record-attendance', 'Recording attendance');
-            
-            // Retry once if failed
-            if (!success) {
-              console.log("Retrying attendance recording...");
-              const retryResult = await callEventApi('record-attendance', 'Retrying attendance recording');
-              success = retryResult.success;
-            }
-            
-            if (success) {
-              console.log("Successfully recorded attendance");
-              attendanceRecorded.current = true;
-            } else {
-              console.error("Failed to record attendance after retry");
-            }
-          } else {
-            console.log("Attendance already recorded for this session");
-          }
-        };
-
-        // Join the meeting room
         zp.joinRoom({
-          container: meetingRef.current,
+          container: myMeeting.current,
           scenario: {
             mode: ZegoUIKitPrebuilt.GroupCall,
-            config: { role: ZegoUIKitPrebuilt.Audience },
           },
-          showScreenSharingButton: true,
+          showPreJoinView: true,
+          turnOnMicrophoneWhenJoining: false,
+          turnOnCameraWhenJoining: false,
+          showLeavingView: false,
+          onLeaveRoom: () => handleLeaveRoom(),
           showUserList: false,
+          showScreenSharingButton: true,
           onJoinRoom: async () => {
-            console.log("Successfully joined the meeting room, recording attendance...");
-            await recordAttendance();
-          },
-          onLeaveRoom: () => {
-            if (!isLeaving) {
-              handleLeaveMeeting('/account/events/joined-events');
+            try {
+              setIsRecordingAttendance(true);
+              await fetch('/api/event/record-attendance', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ eventId })
+              });
+              console.log("Attendance recorded successfully");
+              // Start polling for meeting status after successful join
+              startStatusPolling();
+            } catch (error) {
+              console.error("Error recording attendance:", error);
+            } finally {
+              setIsRecordingAttendance(false);
             }
           }
         });
         
-        // Backup attendance recording
-        setTimeout(() => {
-          if (!attendanceRecorded.current) {
-            console.log("Backup attendance recording...");
-            recordAttendance();
-          }
-        }, 5000);
-      } catch (error) {
-        console.error("Error setting up meeting:", error);
-        setErrorMessage("Failed to join the meeting. Please try again.");
-        setTimeout(() => router.push('/account/joined-events'), 2000);
-      } finally {
         setIsLoading(false);
+      } catch (error) {
+        console.error("Error joining meeting:", error);
+        alert("Failed to join meeting");
+        router.push('/account/events');
       }
     };
 
-    if (session) setupMeeting();
-  }, [session, router, eventId, userId]);
+    joinMeeting();
+  }, [isSessionReady, eventId, router, session?.user.id, session?.user.name]);
 
-  // Status checking interval
-  useEffect(() => {
-    if (!session || !eventId) return;
-    
-    const intervalId = setInterval(checkEventStatus, 10000);
-    console.log("Set up meeting status check every 10 seconds");
-    
-    return () => {
-      console.log("Cleaning up meeting status check interval");
-      clearInterval(intervalId);
-    };
-  }, [session, eventId]);
+  const handleLeaveRoom = async () => {
+    try {
+      // Clear status polling interval
+      if (statusIntervalRef.current) {
+        clearInterval(statusIntervalRef.current);
+        statusIntervalRef.current = null;
+      }
+      
+      setIsLeavingMeeting(true);
+      await fetch('/api/event/leave-event', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ eventId })
+      });
+      setIsLeavingMeeting(false);
+      alert("Successfully left the meeting");
 
-  // Handle error state
-  if (errorMessage) {
-    return (
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
-        <div className="bg-card p-6 rounded-lg border flex flex-col items-center gap-4 shadow-lg">
-          <p className="text-red-500">{errorMessage}</p>
-          <p className="text-card-foreground">Redirecting...</p>
-        </div>
-      </div>
-    );
-  }
+     window.location.href = '/account/events/joined-events';
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
-        <div className="bg-card p-6 rounded-lg border flex flex-col items-center gap-4 shadow-lg">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-card-foreground">Joining meeting...</p>
-        </div>
-      </div>
-    );
-  }
+    } catch (error) {
+      console.error("Error leaving meeting:", error);
+      setIsLeavingMeeting(false);
+      router.push('/account/events/joined-events');
+    }
+  };
 
   return (
-    <>
-      <div
-        ref={meetingRef}
-        style={{ width: "100vw", height: "100vh" }}
-      />
-      {isLeaving && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-card p-6 rounded-lg border flex flex-col items-center gap-4 shadow-lg">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-card-foreground">Leaving meeting...</p>
+    <div className="flex flex-col h-screen">
+      {isLoading ? (
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-lg">Joining meeting...</p>
           </div>
         </div>
+      ) : (
+        <>
+          {isRecordingAttendance && (
+            <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center">
+              <div className="bg-background p-6 rounded-lg shadow-lg text-center">
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-lg">Mapping joining time...</p>
+              </div>
+            </div>
+          )}
+          {isLeavingMeeting && (
+            <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center">
+              <div className="bg-background p-6 rounded-lg shadow-lg text-center">
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-lg">Leaving meeting...</p>
+              </div>
+            </div>
+          )}
+          <div className="flex-1" ref={myMeeting} />
+          <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Leave Meeting</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to leave this meeting?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleLeaveRoom}>Leave</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </>
       )}
-    </>
+    </div>
   );
-};
-
-export default JoinMeetingPage;
+}

@@ -1,70 +1,77 @@
 # EventConnect
 
-EventConnect is a modern, full-stack web application for creating, managing, and participating in events, with integrated video conferencing capabilities. Built with Next.js, Prisma, and PostgreSQL, it offers a seamless experience for event organizers and participants.
+EventConnect is a comprehensive event management platform built with modern web technologies, enabling users to create, discover, and participate in events with ease. The platform features a robust event management system with public/private event controls, participant tracking, and real-time updates.
 
 ![EventConnect](https://i.sstatic.net/y9DpT.jpg)
 
-## Features
+## Key Features
 
-- **User Authentication**: Secure login and registration system
-- **Event Management**: Create, edit, and manage public or private events
-- **Video Conferencing**: Integrated real-time video meetings using ZegoCloud
-- **Event Analytics**: Track participation, engagement, and other metrics
-- **Certificate Generation**: Generate and download certificates for event participation
-- **Responsive Design**: Beautiful UI that works on all devices
-- **Real-time Notifications**: Stay updated with event changes and activities
+- **Event Discovery**: Browse and filter events with paginated listings
+- **Event Participation**: Join public events or private events with PIN protection
+- **Participant Management**: Track participant counts and seat availability
+- **Event Details**: Comprehensive event information including location, time, organizer, and status
+- **Responsive UI**: Mobile-friendly interface with smooth animations
+- **Real-time Updates**: Instant feedback on event participation status
+- **Loading States**: Smooth transitions and loading indicators for better UX
 
-## Application Structure
+## Core Functionality
 
-### App Directory (`/app`)
-- **API Routes** (`/app/api`): RESTful endpoints for events, authentication, certificates, and ZegoCloud integration
-- **Authentication** (`/app/auth`): NextAuth.js implementation for secure user authentication
-- **Account Management** (`/app/account`): User dashboard, event management, notifications, and settings
-- **Video Conferencing** (`/app/join-meeting`): ZegoCloud integration for real-time video meetings
-- **Cron Jobs** (`/app/cron`): Scheduled tasks for event reminders and cleanup
+### Event Management
+- Create and manage events with detailed information
+- Set maximum participants for private events
+- Track real-time participant counts
+- Display event status (Public/Private) with visual indicators
 
-### Components (`/components`)
-- **UI Components** (`/components/ui`): Extensive library of 35+ reusable UI components including:
-  - Interactive elements (Button, Dialog, Dropdown)
-  - Layout components (Card, BentoGrid, Table)
-  - Animated components (TextAnimate, BorderBeam, HoverBorderGradient)
-  - Data visualization (Chart)
-- **Dashboard Components** (`/components/dashboard`): Overview, recent activities, and event listings
-- **Event Management** (`/components/event-tab`, `/components/joined-tab`): Components for creating and participating in events
-- **Landing Page** (`Hero.tsx`, `FeatureCard.tsx`, etc.): Modern, animated landing page components
-- **Notifications** (`/components/notification`): Real-time notification system
+### User Interaction
+- Join events with one-click functionality
+- Handle concurrent join requests with loading states
+- Prevent duplicate participation
+- Restrict event creators from joining their own events
 
-### Hooks (`/hooks`)
-- **Responsive Design** (`use-mobile.tsx`): Custom hook for responsive layouts across devices
-- **Toast Notifications** (`use-toast.ts`): Toast notification system for user feedback
+### UI Components
+- Paginated event listings with navigation controls
+- Event cards with:
+  - Event name and status badge
+  - Location and timing information
+  - Organizer details
+  - Participant count and seat availability
+- Responsive grid layout for event display
+- Loading skeletons for smooth content transitions
 
-## Tech Stack
+## Technical Implementation
 
-- **Frontend**: Next.js 15, React 19, TailwindCSS, Radix UI
-- **Backend**: Next.js API Routes, Prisma ORM
-- **Database**: PostgreSQL
-- **Authentication**: NextAuth.js
-- **Video Conferencing**: ZegoCloud
-- **Styling**: TailwindCSS, Framer Motion
-- **Analytics**: Vercel Analytics, Speed Insights
+### Frontend Architecture
+- Built with Next.js 15 and React 19
+- State management using React hooks (useState, useEffect, useCallback)
+- API integration with fetch and error handling
+- Session management with NextAuth.js
+- Responsive design with TailwindCSS
+- Icon integration from Lucide and Radix UI
+
+### Backend Integration
+- RESTful API endpoints for:
+  - Event listing with pagination
+  - Event participation
+  - User authentication
+- Data fetching with retry mechanism
+- Error handling with toast notifications
+- Session-based user authentication
+
+### Performance Optimization
+- Paginated data loading
+- Caching loaded pages
+- Loading state management
+- Error boundary handling
+- Efficient re-rendering with memoization
 
 ## Getting Started
 
 ### Prerequisites
-
-- Node.js 18+ 
+- Node.js 18+
 - PostgreSQL database
-- Zego Cloud account (for video conferencing)
-
-### Environment Setup
-
-Create a `.env` file in the root directory and content to .env.example file. 
-```bash
-    cp .env.example .env
-```
+- NextAuth.js configuration
 
 ### Installation
-
 1. Clone the repository:
    ```bash
    git clone https://github.com/yourusername/eventconnect.git
@@ -86,51 +93,40 @@ Create a `.env` file in the root directory and content to .env.example file.
    npm run dev
    ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+5. Access the application at [http://localhost:3000](http://localhost:3000)
 
 ## Usage
 
-### Creating an Event
+### Browsing Events
+1. Visit the events page
+2. Browse through paginated event listings
+3. View event details by clicking on an event card
 
-1. Log in to your account
-2. Navigate to the dashboard
-3. Click "Create Event"
-4. Fill in event details including name, description, date/time, and whether it's online
-5. For online events, a meeting ID will be automatically generated
+### Joining Events
+1. Click "Join Now" on an available event
+2. For private events, enter the required PIN
+3. View real-time updates on participation status
 
-### Joining an Event
-
-1. Browse available events on the homepage
-2. Click on an event to view details
-3. Click "Join Event" to participate
-4. For online events, you'll be redirected to the video conference room
-
-### Video Conferencing
-
-- Online events use ZegoCloud for high-quality video conferencing
-- Features include screen sharing, chat, and participant management
-- Meeting hosts can control participant access and end meetings
-
-### User Dashboard
-
-- **Overview**: See your participation statistics and upcoming events
-- **Event Management**: Create, edit, and manage your events
-- **Notifications**: View and manage your notifications
-- **Reports**: Access analytics for your events
-- **Settings**: Update your profile and preferences
+### Event Management
+1. Create events with detailed information
+2. Set participant limits for private events
+3. Track event participation in real-time
 
 ## Deployment
 
-The easiest way to deploy EventConnect is using the [Vercel Platform](https://vercel.com):
+The application can be deployed using Vercel:
 
 1. Push your code to a GitHub repository
 2. Import the project to Vercel
-3. Add the required environment variables
-4. Deploy
+3. Configure environment variables
+4. Deploy the application
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please follow these guidelines:
+1. Fork the repository
+2. Create a new feature branch
+3. Submit a pull request with detailed description
 
 ## License
 

@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 
-export async function POST(
-  request: NextRequest
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ eventId: string }> }
 ) {
   try {
-    // Get eventId from request body instead of URL params
-    const body = await request.json();
-    const { eventId } = body;
+    const { eventId } = await params;
 
     if (!eventId) {
       return NextResponse.json({ error: "Event ID is required" }, { status: 400 });
