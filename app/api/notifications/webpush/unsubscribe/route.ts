@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if the subscription exists
-    const existingSubscription = await prisma.WebPushSubscription.findUnique({
+    const existingSubscription = await prisma.webPushSubscription.findUnique({
       where: { endpoint },
     });
 
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Delete the subscription
-    await prisma.WebPushSubscription.delete({
+    await prisma.webPushSubscription.delete({
       where: { id: existingSubscription.id },
     });
 

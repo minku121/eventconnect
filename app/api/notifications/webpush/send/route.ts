@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find all push subscriptions for this user
-    const subscriptions = await prisma.WebPushSubscription.findMany({
+    const subscriptions = await prisma.webPushSubscription.findMany({
       where: { userId: Number(userId) },
     });
 
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         } catch (error: any) {
           // If subscription has expired or is invalid, delete it
           if (error.statusCode === 410) { // Gone status
-            await prisma.WebPushSubscription.delete({
+            await prisma.webPushSubscription.delete({
               where: { id: sub.id },
             });
           }

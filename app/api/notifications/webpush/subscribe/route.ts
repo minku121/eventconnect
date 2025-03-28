@@ -26,14 +26,14 @@ export async function POST(request: NextRequest) {
     const { p256dh, auth } = keys;
     
     // Check if this endpoint is already registered
-    const existingSubscription = await prisma.WebPushSubscription.findUnique({
+    const existingSubscription = await prisma.webPushSubscription.findUnique({
       where: { endpoint },
     });
 
     if (existingSubscription) {
       // If subscription exists but for a different user, update the userId
       if (existingSubscription.userId !== userId) {
-        await prisma.WebPushSubscription.update({
+        await prisma.webPushSubscription.update({
           where: { id: existingSubscription.id },
           data: { userId },
         });
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create a new subscription
-    const newSubscription = await prisma.WebPushSubscription.create({
+    const newSubscription = await prisma.webPushSubscription.create({
       data: {
         userId,
         endpoint,
