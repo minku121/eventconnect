@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/next"; 
 import TopLoader from "@/components/ui/toploader";
+import ClarityProvider from "./externalcontext/ClarityProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,6 +40,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <ClarityProvider />
             
             {children}
           </ThemeProvider>
