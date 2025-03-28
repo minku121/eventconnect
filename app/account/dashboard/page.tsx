@@ -1,29 +1,10 @@
 "use client"
 
-import { Metadata } from "next"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Overview } from "@/components/dashboard/overview"
 import { RecentActivity } from "@/components/dashboard/recent-activity"
 import { RecentEvents } from "@/components/dashboard/recent-events"
 import { useEffect, useState } from 'react'
-
-export const metadata: Metadata = {
-  title: "Dashboard | TeamConnect",
-  description: "View your TeamConnect dashboard with event analytics, recent activities, and upcoming events all in one place.",
-  keywords: [
-    "TeamConnect dashboard", 
-    "event analytics", 
-    "event management", 
-    "collaboration dashboard", 
-    "team events", 
-    "activity overview"
-  ],
-  openGraph: {
-    title: "Dashboard | TeamConnect",
-    description: "Your personalized dashboard for managing events, tracking activities, and monitoring team collaboration",
-    type: "website",
-  }
-};
 
 export default function DashboardPage() {
   const [activities, setActivities] = useState<Array<{
