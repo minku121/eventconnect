@@ -24,6 +24,7 @@ model User {
   joinedEvents  Event[]        @relation("EventParticipant")
   certificates  Certificate[]
   eventAttendees EventAttendee[]
+  pushSubscriptions WebPushSubscription[]
   
   eventsCreated Int            @default(0) @map("events_created")
   eventsJoined  Int            @default(0) @map("events_joined")
@@ -139,4 +140,18 @@ model EventAttendee {
   totalDuration Int  @default(0) // Total duration in milliseconds
 
   @@unique([eventId, userId])
+}
+
+model WebPushSubscription {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id])
+  endpoint     String   @unique
+  expirationTime String? 
+  p256dh       String
+  auth         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("web_push_subscriptions")
 }

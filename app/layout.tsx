@@ -8,6 +8,7 @@ import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/next"; 
 import TopLoader from "@/components/ui/toploader";
 import ClarityProvider from "./externalcontext/ClarityProvider";
+import { PushNotificationProvider } from "@/components/notifications/PushNotificationProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,29 +21,73 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TeamConnect - Create Team Collaboration",
-  description: "Coonect with your team and collaborate on projects",
+  title: "EventConnect - Create, Join & Certify Events | eventconnectweb.xyz",
+  description: "Create and manage professional events, join video meetings, and issue verified certificates on eventconnectweb.xyz - the complete event management platform.",
   verification: {
     google: "qL720GXw6dFNEOuVaNMFuRgmVM2BgQ0lKgMGKsqkmqo",
   },
-  keywords: ["TeamConnect", "Event Collaboration", "Event Collaboration Platform", "event collaboration" , "Event collaboration platform" , "Join Event online",  "Event and certificate plateform" , "Team Collaboration", "Team Collaboration Platform", "Team Collaboration Tool", "Team Collaboration Software", "Team Collaboration App", "Team Collaboration System", "Team Collaboration Platform", "Team Collaboration Tool", "Team Collaboration Software", "Team Collaboration App", "Team Collaboration System"],
+  metadataBase: new URL('https://eventconnectweb.xyz'),
+  alternates: {
+    canonical: '/',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
+  keywords: [
+    "EventConnect", 
+    "Event Collaboration", 
+    "Online Event Platform", 
+    "Video Meetings", 
+    "Digital Certificates", 
+    "Remote Collaboration", 
+    "Team Events", 
+    "Event Management", 
+    "Virtual Meetings", 
+    "Event Certification Platform", 
+    "Team Collaboration Software", 
+    "Online Team Building", 
+    "Event Analytics", 
+    "Meeting Scheduler", 
+    "Attendance Tracking"
+  ],
   openGraph: {
-    title: "TeamConnect - Create Event Collaboration and Join event online",
-    description: "Coonect with your team and collaborate on projects",
+    title: "EventConnect - Professional Event Management & Certification",
+    description: "Create engaging online events, join video meetings, and issue professional certificates with EventConnect.",
     type: "website",
-    locale: "en",
-    siteName: "TeamConnect",
+    locale: "en_US",
+    siteName: "EventConnect",
+    url: "https://eventconnectweb.xyz",
+    images: [
+      {
+        url: 'https://eventconnectweb.xyz/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'EventConnect Platform Preview',
+      }
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "TeamConnect - Create And Join event online",
-    description: "Coonect and create teams online with certifications",
+    title: "EventConnect - Professional Event Management",
+    description: "Create, join and certify professional events on eventconnectweb.xyz",
+    images: ['https://eventconnectweb.xyz/twitter-image.jpg'],
+    creator: "@eventconnect",
   },
-
   icons: {
     icon: "/favicon.ico",
+    shortcut: "/favicon-16x16.png",
+    apple: "/apple-touch-icon.png",
+    other: {
+      rel: "icon",
+      url: "/favicon-32x32.png",
+      sizes: "32x32",
+    }
   },
-  
 };
 
 export default function RootLayout({
@@ -62,11 +107,12 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <ClarityProvider />
-            
-            {children}
+            <PushNotificationProvider>
+              {children}
+            </PushNotificationProvider>
+            <Toaster />
           </ThemeProvider>
         </SessionProviderWrapper>
-        <Toaster /> 
         <TopLoader />
        
         <Analytics/>
