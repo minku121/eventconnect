@@ -49,7 +49,7 @@ export function Navbar() {
         </Link>
         {session ? (
           <Button variant="secondary" size="sm" asChild>
-            <Link href="/dashboard">Dashboard</Link>
+            <Link href="/account/dashboard">Dashboard</Link>
           </Button>
         ) : (
           <Button variant="secondary" size="sm" asChild>
@@ -100,7 +100,7 @@ export function Navbar() {
             </Link>
             {session ? (
               <Link
-                href="/dashboard"
+                href="/account/dashboard"
                 className="block px-2 py-3 text-lg hover:bg-background/20 rounded-xl transition-colors"
                 onClick={closeMenu}
               >

@@ -1,4 +1,3 @@
-
 import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowRight, Calendar, Flag, Users, PenToolIcon as Tool } from "lucide-react"
@@ -140,7 +139,7 @@ export default async function DashboardOverview() {
       <h2 className="text-2xl font-semibold mb-4">Quick Actions</h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Button asChild className="w-full">
-          <Link href="/dashboard">
+          <Link href="/account/dashboard">
             Go to Dashboard
             <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
