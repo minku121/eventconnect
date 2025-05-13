@@ -8,7 +8,6 @@ import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/next"; 
 import TopLoader from "@/components/ui/toploader";
 import ClarityProvider from "./externalcontext/ClarityProvider";
-import { PushNotificationProvider } from "@/components/notifications/PushNotificationProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -102,14 +101,12 @@ export default function RootLayout({
         <SessionProviderWrapper>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
+            defaultTheme="dark"
             enableSystem
             disableTransitionOnChange
           >
             <ClarityProvider />
-            <PushNotificationProvider>
-              {children}
-            </PushNotificationProvider>
+            {children}
             <Toaster />
           </ThemeProvider>
         </SessionProviderWrapper>

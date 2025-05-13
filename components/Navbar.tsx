@@ -22,7 +22,7 @@ export function Navbar() {
 
   return (
     <nav
-      className="flex items-center justify-between p-3 h-[60px] bg-transparent bg-opacity-50 backdrop-blur-md fixed top-0 w-full border-b border-slate-700 border-0.5 z-[99]"
+      className="flex items-center justify-between p-3 h-[70px] bg-background/30 backdrop-blur-sm fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl rounded-full border border-slate-700/30 shadow-lg z-[99]"
       style={{ zIndex: 9999 }}
     >
       <Link href="/" className="text-lg font-medium">
@@ -49,7 +49,7 @@ export function Navbar() {
         </Link>
         {session ? (
           <Button variant="secondary" size="sm" asChild>
-            <Link href="/account/dashboard">Dashboard</Link>
+            <Link href="/dashboard">Dashboard</Link>
           </Button>
         ) : (
           <Button variant="secondary" size="sm" asChild>
@@ -71,37 +71,37 @@ export function Navbar() {
           </Button>
         </SheetTrigger>
         <SheetContent
-          side="right"
-          className="w-[280px] sm:w-[300px] bg-background/5 backdrop-blur-md text-center bg-opacity-50 mt-[60px] h-[calc(100vh-60px)]"
+          side="bottom"
+          className="w-full h-[70vh] bg-background/30 backdrop-blur-md text-center bg-opacity-50 rounded-t-3xl border-t border-slate-700/30 mt-[70px]"
         >
-         
+          <div className="w-12 h-1.5 bg-slate-700/30 rounded-full mx-auto mb-8" />
           <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-          <nav className="flex flex-col gap-4">
+          <nav className="flex flex-col gap-6">
             <Link
-              href="/account/events"
-              className="block px-2 py-1 text-lg"
+              href="/events"
+              className="block px-2 py-3 text-lg hover:bg-background/20 rounded-xl transition-colors"
               onClick={closeMenu}
             >
               Events
             </Link>
             <Link
-              href="/account/teams"
-              className="block px-2 py-1 text-lg"
+              href="/teams"
+              className="block px-2 py-3 text-lg hover:bg-background/20 rounded-xl transition-colors"
               onClick={closeMenu}
             >
               Teams
             </Link>
             <Link
-              href="/about-us"
-              className="block px-2 py-1 text-lg"
+              href="/challenges"
+              className="block px-2 py-3 text-lg hover:bg-background/20 rounded-xl transition-colors"
               onClick={closeMenu}
             >
-              About Us
+              Challenges
             </Link>
             {session ? (
               <Link
-                href="/account/dashboard"
-                className="block px-2 py-1 text-lg"
+                href="/dashboard"
+                className="block px-2 py-3 text-lg hover:bg-background/20 rounded-xl transition-colors"
                 onClick={closeMenu}
               >
                 Dashboard
@@ -109,7 +109,7 @@ export function Navbar() {
             ) : (
               <Link
                 href="/auth/signin"
-                className="block px-2 py-1 text-lg"
+                className="block px-2 py-3 text-lg hover:bg-background/20 rounded-xl transition-colors"
                 onClick={closeMenu}
               >
                 Sign In
