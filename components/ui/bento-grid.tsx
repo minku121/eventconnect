@@ -24,7 +24,7 @@ const BentoGrid = ({ children, className }: BentoGridProps) => {
   return (
     <div
       className={cn(
-        "grid w-full auto-rows-[22rem] grid-cols-3 gap-4 hover:shadow-glow ",
+        "grid w-full auto-rows-[22rem] grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 hover:shadow-glow",
         className,
       )}
     >
@@ -46,7 +46,7 @@ const BentoCard = ({
   <div
     key={name}
     className={cn(
-      `group relative col-span-3 flex flex-col justify-between overflow-hidden rounded-xl border ${color} border-[1px] dark:border-slate-100`,
+      `group relative col-span-1 flex flex-col justify-between overflow-hidden rounded-xl border ${color} border-[1px] dark:border-slate-100`,
       "transform-gpu bg-transparent dark:[border:1px_solid_rgba(255,255,255,.1)]",
       `hover:bg-${color}-500 transition-all duration-500 ease-out`,
       `drop-shadow-${color}`,
@@ -54,12 +54,12 @@ const BentoCard = ({
     )}
   >
     <div>{background}</div>
-    <div className="pointer-events-none z-10 flex transform-gpu flex-col gap-1 p-6 transition-all duration-300 group-hover:-translate-y-10">
-      <Icon className="h-12 w-12 origin-left transform-gpu text-neutral-700 transition-all duration-300 ease-in-out group-hover:scale-75" />
-      <h3 className="text-xl font-semibold text-neutral-700 dark:text-neutral-300">
+    <div className="pointer-events-none z-10 flex transform-gpu flex-col gap-1 p-4 sm:p-5 md:p-6 transition-all duration-300 group-hover:-translate-y-10">
+      <Icon className="h-8 w-8 sm:h-10 md:h-12 sm:w-10 md:w-12 origin-left transform-gpu text-neutral-700 transition-all duration-300 ease-in-out group-hover:scale-75" />
+      <h3 className="text-lg sm:text-xl font-semibold text-neutral-700 dark:text-neutral-300">
         {name}
       </h3>
-      <p className="max-w-lg text-neutral-400">{description}</p>
+      <p className="max-w-lg text-sm sm:text-base text-neutral-400">{description}</p>
     </div>
 
     <div
